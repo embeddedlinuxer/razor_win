@@ -619,7 +619,8 @@ mnuHomescreenWaterCut(const Uint16 input)
 	snprintf(lcdLine0,MAX_LCD_WIDTH+1,"Watercut %6.2f%%", Round_N(REG_WATERCUT.calc_val,2));
 
 	/* update temperature */
-	(REG_TEMPERATURE.unit == u_temp_C) ? snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cC", REG_TEMP_USER.val, LCD_DEGREE) : sprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cF", REG_TEMP_USER.val, LCD_DEGREE);
+	if (REG_TEMPERATURE.unit == u_temp_C) snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cC", REG_TEMP_USER.val, LCD_DEGREE);
+	else snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cF", REG_TEMP_USER.val, LCD_DEGREE);
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(lcdLine0, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay); 
@@ -1155,6 +1156,7 @@ mnuConfig_Analyzer_ProcsAvg(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_PROCSAVG;
 
 	static char buf[MAX_LCD_WIDTH];
+
 	sprintf(buf,"%8.0f Samples", REG_PROC_AVGING.calc_val);
 	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 

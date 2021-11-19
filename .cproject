@@ -244,10 +244,6 @@
 									<listOptionValue builtIn="false" value="${PDK_INSTALL_PATH}/ti/drv/usb/example/shell"/>
 									<listOptionValue builtIn="false" value="${PDK_INSTALL_PATH}/ti/board/src/flash/nand"/>
 									<listOptionValue builtIn="false" value="${PDK_INSTALL_PATH}/ti/boot/sbl/tools/omapl13x_boot_utils/OMAP-L138/Common/include"/>
-									<listOptionValue builtIn="false" value="${SRC_ROOT}/OMAP-L138/Common/include"/>
-									<listOptionValue builtIn="false" value="${SRC_ROOT}/Common/include"/>
-									<listOptionValue builtIn="false" value="${SRC_ROOT}/Common/ccs/include"/>
-									<listOptionValue builtIn="false" value="${SRC_ROOT}/Common/drivers/include"/>
 									<listOptionValue builtIn="false" value="${C6000_CSL_CG_ROOT}"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C6000_8.3.compilerID.PRINTF_SUPPORT.1210932415" name="Level of printf/scanf support required (--printf_support)" superClass="com.ti.ccstudio.buildDefinitions.C6000_8.3.compilerID.PRINTF_SUPPORT" value="com.ti.ccstudio.buildDefinitions.C6000_8.3.compilerID.PRINTF_SUPPORT.full" valueType="enumerated"/>
