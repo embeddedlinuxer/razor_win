@@ -19,9 +19,8 @@
 
 void resetGlobalVars(void)
 {
-    /* set GPIO pin 5 as output */
-	ctrlGpioPin(5, GPIO_CTRL_SET_OUT_DATA, FALSE, NULL);
-	//gpioRegs->BANK_REGISTERS[0].OUT_DATA &= ~(1 << 5);
+    //CSL_FINS(gpioRegs->BANK_REGISTERS[1].OUT_DATA,GPIO_OUT_DATA_OUT5,FALSE); //set GPIO pin as output
+	gpioRegs->BANK_REGISTERS[0].OUT_DATA &= ~(1 << 5);
 
 	isUsbMounted = FALSE;
 	isUsbUnloaded = FALSE;
@@ -553,8 +552,7 @@ void reloadFactoryDefault(void)
 	COIL_Initialize(&COIL_UPGRADE_ENABLE, FALSE, 0);
 
 	//CSL_FINS(gpioRegs->BANK_REGISTERS[1].OUT_DATA,GPIO_OUT_DATA_OUT5,FALSE); //set GPIO pin as output
-	//gpioRegs->BANK_REGISTERS[0].OUT_DATA &= ~(1 << 5);
-	ctrlGpioPin(5, GPIO_CTRL_SET_OUT_DATA, FALSE, NULL);
+	gpioRegs->BANK_REGISTERS[0].OUT_DATA &= ~(1 << 5);
 	THROW_ERROR 		= 0;
 	DIAGNOSTICS 		= 0;
 	DIAGNOSTICS_MASK 	= 0xFFFFFFFF;

@@ -23,6 +23,9 @@
 #include "Globals.h"
 #include "Menu.h"
 
+#define USB3SS_EN
+#define NANDWIDTH_16
+#define OMAPL138_LCDK
 #define USB_INSTANCE    	0
 #define SOC_CACHELINE_SIZE  (64U)
 

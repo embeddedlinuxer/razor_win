@@ -103,8 +103,6 @@
 #define _EXTERN extern
 #endif
 
-#define DEFAULT_MODEL_CODE 			"PHASEDYNAMICSINC"
-
 #define GPIO_CTRL_SET_OUT_DATA      1
 #define GPIO_CTRL_SET_DIR           2
 #define GPIO_CTRL_SET_OUTPUT        3
@@ -114,6 +112,15 @@
 #define GPIO_CTRL_CLEAR_RE_INTR     7
 #define GPIO_CTRL_SET_FE_INTR       8
 #define GPIO_CTRL_CLEAR_FE_INTR     9
+
+////////////////////////////////////////////////////
+///// MAKE SURE TO CHANGE VERSION UPON NEW RELEASE
+////////////////////////////////////////////////////
+
+#define DEFAULT_MODEL_CODE 			"PHASEDYNAMICSINC"
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
 
 #define MAX_LCD_WIDTH				16
 #define NUMBER_OF_OSC				1
@@ -194,8 +201,11 @@ _EXTERN float Round_N_Float (float v, int n);
 _EXTERN double sigfig (double v, int n);
 _EXTERN double truncate (double v, int n);
 _EXTERN void setupMenu (void);
+_EXTERN void logData(void);
+_EXTERN void usbhMscDriveOpen(void);
 _EXTERN void resetGlobalVars(void);
 _EXTERN void delayTimerSetup(void);
+_EXTERN void Init_Data_Buffer(void);
 _EXTERN void initializeAllRegisters(void);
 _EXTERN void Read_RTC(int* p_sec, int* p_min, int* p_hr, int* p_day, int* p_mon, int* p_yr);
 _EXTERN void reloadFactoryDefault(void);
@@ -242,6 +252,16 @@ typedef struct
 	_EXTERN Uint32 	 FREQ_U_SEC_ELAPSED; 	// microseconds - time elapsed since last frequency pulse reading
 	_EXTERN DATA_BFR DATALOG;
 	
+////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+/// 
+/// NAND FLASH 
+/// 
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+    _EXTERN unsigned char MSG_DIG[32];
+
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 /// 
@@ -294,68 +314,92 @@ typedef struct
 ///////////////////////////////////////////////////////////
 
 #ifdef GLOBAL_VARS
-
-    /* USB OTG Overlays */
+    // USB OTG Overlays
     CSL_Usb_otgRegsOvly usbRegs = (CSL_Usb_otgRegsOvly)CSL_USB_0_REGS;
 
-	/* Register Overlays */
+	// Register Overlays 
 	CSL_I2cRegsOvly		i2cRegs = (CSL_I2cRegsOvly)CSL_I2C_0_DATA_CFG;
 
-	/* sys config registers overlay */
+	// sys config registers overlay
 	CSL_SyscfgRegsOvly 	sysRegs = (CSL_SyscfgRegsOvly)(CSL_SYSCFG_0_REGS);
 
-	/* Psc register overlay */      
+	// Psc register overlay       
 	CSL_PscRegsOvly    	psc1Regs = (CSL_PscRegsOvly)(CSL_PSC_1_REGS);
 
-	/* Gpio register overlay */          
+	// Gpio register overlay            
 	CSL_GpioHandle    	gpioRegs = (CSL_GpioHandle)(CSL_GPIO_0_REGS);
 
-    /* Interrupt Controller Register Overlay */   
+    // Interrupt Controller Register Overlay    
     CSL_IntcRegsOvly     intcRegs = (CSL_IntcRegsOvly)CSL_INTC_0_REGS;
 
-	/* Uart register overlay */
+	// Uart register overlay
 	CSL_UartRegsOvly 	uartRegs = (CSL_UartRegsOvly)CSL_UART_2_REGS;
 
-	/* EMIFA register overlay */
+	// EMIFA register overlay
 	CSL_EmifaRegsOvly 	emifaRegs = (CSL_EmifaRegsOvly)CSL_EMIFA_0_REGS;
 
-	/* Timer register overlays */
+	// Timer register overlays
 	CSL_TmrRegsOvly		tmr3Regs = (CSL_TmrRegsOvly)CSL_TMR_3_REGS;
 
-	/* RTC register overlay	*/
+	// RTC register overlay	
 	CSL_Syscfg1RegsOvly	sys1Regs = (CSL_Syscfg1RegsOvly)(CSL_SYSCFG_1_REGS);
-
 #else
-
-    /* Usb Overlays */
+    // Usb Overlays
     extern CSL_Usb_otgRegsOvly usbRegs;
 
-	/* Register Overlays */
+	// Register Overlays 
 	extern CSL_I2cRegsOvly 	   i2cRegs;
 
-	/* sys config registers overlay */
+	// sys config registers overlay
 	extern CSL_SyscfgRegsOvly  sysRegs;
 
-	/* Psc register overlay */
+	// Psc register overlay
 	extern CSL_PscRegsOvly     psc1Regs;
 
-	/* Gpio register overlay */
+	// Gpio register overlay
 	extern CSL_GpioHandle    gpioRegs;
 
-	/* Interrupt Controller Register Overlay */
+	// Interrupt Controller Register Overlay
 	extern CSL_IntcRegsOvly intcRegs;
 
-	/* Uart register overlay */
+	// Uart register overlay
 	extern CSL_UartRegsOvly	   uartRegs;
 
-	/* EMIFA register overlay */
+	// EMIFA register overlay
 	extern CSL_EmifaRegsOvly   emifaRegs;
 
-	/* Timer register overlays */
+	// Timer register overlays
 	extern CSL_TmrRegsOvly 	   tmr3Regs;
 
 	extern CSL_Syscfg1RegsOvly sys1Regs;
 #endif
+
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+///  
+/// VERSION CONTROL
+///  
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+#pragma DATA_SECTION(FW_REV_FIELD1,"CFG")
+	_EXTERN Uint8	FW_REV_FIELD1;
+
+#pragma DATA_SECTION(FW_REV_FIELD2,"CFG")
+	_EXTERN Uint8	FW_REV_FIELD2;
+
+#pragma DATA_SECTION(FW_REV_FIELD3,"CFG")
+	_EXTERN Uint8	FW_REV_FIELD3;
+
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+///  
+/// NAND Flash
+///  
+///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+
+	_EXTERN unsigned char MSG_DIG[32];
 
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
