@@ -427,24 +427,22 @@ void upgradeFirmware(void)
     VUint16 *addr_flash;
     ASYNC_MEM_InfoHandle dummy;
 	FIL fPtr;
-	FRESULT fr;
 
 	BYTE buffer[4096];
 	int index = 0;
 	int loop = 0;
 	UINT br = 0;
-	char mummy[] = "100";
 
 	/// open fw file
-	fr = f_open(&fPtr, PDI_RAZOR_FIRMWARE, FA_READ);
-	snprintf(mummy,2,"%d",index);
-    if (fr != FR_OK) return;
+    if (f_open(&fPtr, PDI_RAZOR_FIRMWARE, FA_READ) != FR_OK) return;
 	
     UTIL_setCurrMemPtr(0);
 
     /// reset command
     addr_flash = (VUint16 *)(FBASE + DEVICE_NAND_CLE_OFFSET);
-	snprintf(mummy,2,"%d",index);
+
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+    for (i=0;i<ACCESS_DELAY;i++);
 
     *addr_flash = (VUint16)0xFF;
 
@@ -457,14 +455,14 @@ void upgradeFirmware(void)
     /// write getinfo command
     addr_flash = (VUint16 *)(FBASE + DEVICE_NAND_ALE_OFFSET);
     *addr_flash = (VUint16)NAND_ONFIRDIDADD;
-	snprintf(mummy,2,"%d",index);
 
-    for (i=0;i<4;i++) addr_flash = (VUint16 *)(FBASE);
 	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+    for (i=0;i<ACCESS_DELAY;i++);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+    for (i=0;i<4;i++) addr_flash = (VUint16 *)(FBASE);
 
     /// Initialize NAND Flash
     hNandInfo = NAND_open((Uint32)NANDStart, DEVICE_BUSWIDTH_16BIT);
-	snprintf(mummy,2,"%d",index);
     if (hNandInfo == NULL) return;
 
     /// Read file size
@@ -472,8 +470,7 @@ void upgradeFirmware(void)
 
     /// get page size
     numPagesAIS = 0;
-   	while ( (numPagesAIS * hNandInfo->dataBytesPerPage)  < aisFileSize) numPagesAIS++;
-	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+    while ( (numPagesAIS * hNandInfo->dataBytesPerPage)  < aisFileSize) numPagesAIS++;
 
     /// We want to allocate an even number of pages.
     aisAllocSize = numPagesAIS * hNandInfo->dataBytesPerPage;
@@ -491,45 +488,54 @@ void upgradeFirmware(void)
 	/// display clear
 	LCD_setcursor(0,0);
 	displayLcd("FIRMWARE UPGRADE",0);	
-	snprintf(mummy,2,"%d",index);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+	for (i=0;i<ACCESS_DELAY;i++);
 
 	/// stop all clocks and timers excpet some required clocks
 	disableAllClocksAndTimers();
 
 	/// read file	
 	for (;;) {
+		for (i=0;i<5;i++) buffer[0] = '\0';
 		TimerWatchdogReactivate(CSL_TMR_1_REGS);
-		snprintf(mummy,2,"%d",index);
-		buffer[0] = '\0';
      	if (f_read(&fPtr, buffer, sizeof(buffer), &br) != FR_OK) return;
 		if (br == 0) break; /* error or eof */
 		for (loop=0;loop<sizeof(buffer);loop++) 
 		{
+      		for (i=0;i<10;i++) aisPtr[index] = buffer[loop];
 			TimerWatchdogReactivate(CSL_TMR_1_REGS);
-      		aisPtr[index] = buffer[loop];
-			snprintf(mummy,2,"%d",index);
-	    	sprintf(lcdLine1,"      %3d%%    ",index*100/aisAllocSize);
-			snprintf(mummy,2,"%d",index);
+	    	for (i=0;i<10;i++) sprintf(lcdLine1,"      %3d%%    ",index*100/aisAllocSize);
+			TimerWatchdogReactivate(CSL_TMR_1_REGS);
 			index++;
    		}
 
 		/// watchdog timer reactive
    		sprintf(lcdLine1,"      %3d%%    ",index*100/aisAllocSize);
 		displayLcd(lcdLine1,1);	
-		snprintf(mummy,2,"%d",index);
+		TimerWatchdogReactivate(CSL_TMR_1_REGS);
+   		for(i=0;i<ACCESS_DELAY;i++);
     }
 
 	/// close and delete
     f_close(&fPtr);
-	snprintf(mummy,2,"%d",index);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+	for(i=0;i<ACCESS_DELAY;i++);
 
 	/// download existing csv
     downloadCsv();
-	snprintf(mummy,2,"%d",index);
+    TimerWatchdogReactivate(CSL_TMR_1_REGS);
+    for(i=0;i<ACCESS_DELAY*100;i++);
+
+	/// disable all interrupts while accessing flash memory
+	Swi_disable();
 
     /* Write the file data to the NAND flash */
     if (USB_writeData(hNandInfo, aisPtr, numPagesAIS) != E_PASS) return;
-	snprintf(mummy,2,"%d",index);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
+   	for(i=0;i<ACCESS_DELAY*100;i++);
+
+	/* enable interrupts */
+	Swi_enable();
 
 	/// force to expire watchdog timer
     while(1); 
