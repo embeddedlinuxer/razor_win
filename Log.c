@@ -32,7 +32,7 @@
 #define MAX_ENTRY_SIZE  	50 
 #define MAX_HEAD_SIZE   	110 
 #define USB_BLOCK_SIZE		512
-#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*4	// 2 KB
+#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*10	// 5 KB
 #define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24 	// 12 KB
 
 extern void TimerWatchdogReactivate(unsigned int baseAddr);
@@ -818,20 +818,26 @@ void uploadCsv(void)
 void usbhMscDriveOpen(void)
 {
 	int i;
+	USB_Config* usb_config;
     usb_host_params.usbMode      = USB_HOST_MSC_MODE;
     usb_host_params.instanceNo   = USB_INSTANCE;
     usb_handle = USB_open(usb_host_params.instanceNo, &usb_host_params);
 
-    // failed to open
     if (usb_handle == 0) return;
 
-    // Setup the INT Controller
+    /* setup INT Controller */
 	usbHostIntrConfig (&usb_host_params);
 
-    // Initialize the file system.
+	/* enable usb 3.0 super speed && DMA MODE */
+    usb_config->usb30Enabled = TRUE;
+    usb_handle->usb30Enabled = TRUE;
+    usb_handle->dmaEnabled = TRUE;
+    usb_handle->handleCppiDmaInApp = TRUE;
+
+    /* Initialize the file system. */
     FATFS_init();
 
-    // Open an instance of the mass storage class driver.
+    /* Open an instance of the mass storage class driver. */
 	Swi_disable();
 
 	g_ulMSCInstance = USBHMSCDriveOpen(usb_host_params.instanceNo, 0, MSCCallback);
