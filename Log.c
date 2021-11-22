@@ -512,6 +512,7 @@ void logData(void)
     DATA_BUF[0] = '\0';
     TEMP_BUF[0] = '\0';
 	Swi_enable();
+	snprintf(dummy,2,"%d",USB_RTC_SEC);
 	if (isLogData) Clock_start(logData_Clock);
    	return;
 }
@@ -872,7 +873,7 @@ void enumerateUsb(void)
 
 		i++;
 		TimerWatchdogReactivate(CSL_TMR_1_REGS);
-		snprintf(dummy,2,"%d",USB_RTC_SEC);
+		usb_osalDelayMs(300);
     }
 
     startClocks();
