@@ -282,8 +282,12 @@ void errorUsb(FRESULT fr)
     return;
 }
 
-
 void logData(void)
+{
+	Swi_post(Swi_dataLog);
+}
+
+void dataLog(void)
 {
     FRESULT fr;
 	char dummy[] = "100";
