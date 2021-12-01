@@ -277,7 +277,7 @@ void errorUsb(FRESULT fr)
     else if (fr == FR_TIMEOUT) usbStatus = 14;
     else if (fr == FR_LOCKED) usbStatus = 15;
     else if (fr == FR_NOT_ENOUGH_CORE) usbStatus = 16;
-    else usbStatus = 2;
+    else usbStatus = 0;
 
     return;
 }
@@ -465,11 +465,11 @@ void dataLog(void)
 	/* error check before opening file descriptor */
 	if (f_error(&logWriteObject) != 0) 
 	{
+		Swi_restore(key);
 		DATA_BUF[0] = '\0';
     	TEMP_BUF[0] = '\0';
-		snprintf(dummy,2,"%d",USB_RTC_SEC);
-		if (isLogData) Clock_start(logData_Clock);
-
+		resetCsvStaticVars();
+		resetUsbStaticVars();
        	return;
 	}
 
