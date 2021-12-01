@@ -459,18 +459,19 @@ void dataLog(void)
 		return;
 	}
 
+	/* disable interrupt while accessing USB */
+	key = Swi_disable();
+
 	/* error check before opening file descriptor */
 	if (f_error(&logWriteObject) != 0) 
 	{
 		DATA_BUF[0] = '\0';
     	TEMP_BUF[0] = '\0';
-       	errorUsb(FR_DISK_ERR);
-		TimerWatchdogReactivate(CSL_TMR_1_REGS);
+		snprintf(dummy,2,"%d",USB_RTC_SEC);
+		if (isLogData) Clock_start(logData_Clock);
+
        	return;
 	}
-
-	/* disable interrupt while accessing USB */
-	key = Swi_disable();
 
 	/* open */
 	snprintf(dummy,2,"%d",USB_RTC_SEC);
@@ -830,6 +831,9 @@ void usbhMscDriveOpen(void)
 
     if (usb_handle == 0) return;
 
+	/* disable all SW interrupts while accessing critical section */
+	Swi_disable();
+
     /* setup INT Controller */
 	usbHostIntrConfig (&usb_host_params);
 
@@ -838,11 +842,9 @@ void usbhMscDriveOpen(void)
     usb_handle->usb30Enabled = TRUE;
     usb_handle->dmaEnabled = TRUE;
     usb_handle->handleCppiDmaInApp = TRUE;
-
+	
     /* Initialize the file system. */
     FATFS_init();
-
-	Swi_disable();
 
     /* Open an instance of the mass storage class driver. */
 	g_ulMSCInstance = USBHMSCDriveOpen(usb_host_params.instanceNo, 0, MSCCallback);
