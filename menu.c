@@ -580,6 +580,20 @@ onFxnEnterPressed(const int currentId, const double max, const double min, VAR *
     return currentId;
 }
 
+void
+changeTime(void)
+{
+	int index = MENU.col;
+	index++;
+	if (index == MAX_LCD_WIDTH) index = 0;
+   	if ((index == 2) || (index == 5) || (index == 8) || (index == 11)) index++;
+	if ((index == 12) || (index == 13)) index = 14;
+	if (index >= MAX_LCD_WIDTH) index = 0;
+	MENU.col = index;
+    LCD_printch(lcdLine1[MENU.col], MENU.col, MENU.row);
+    LCD_setBlinking(MENU.col, MENU.row);
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 ////
@@ -1660,6 +1674,15 @@ Uint16
 mnuConfig_DataLogger_EnableLogger(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DATALOGGER_ENABLELOGGER;
+
+	/* keep tracking current usb status */
+	static int status_prev = 0;
+
+	if (status_prev != usbStatus) 
+	{
+		isUpdateDisplay = TRUE; 
+		status_prev = usbStatus;
+	}
 
 	if (isUpdateDisplay) updateDisplay(CFG_DATALOGGER_ENABLELOGGER,USB_CODE[usbStatus]);
 
@@ -3452,14 +3475,15 @@ fxnSecurityInfo_TimeAndDate(const Uint16 input)
             LCD_printch(lcdLine1[MENU.col], MENU.col, MENU.row);
             LCD_setBlinking(MENU.col, MENU.row);
 			return FXN_SECURITYINFO_TIMEANDDATE;
-        case BTN_STEP   :
-            MENU.col++;
+        case BTN_STEP   :	
+            /*MENU.col++;
 			if (MENU.col == MAX_LCD_WIDTH) MENU.col = 0;
            	if ((MENU.col == 2) || (MENU.col == 5) || (MENU.col == 8) || (MENU.col == 11)) MENU.col++;
 			if ((MENU.col == 12) || (MENU.col == 13)) MENU.col = 14;
 			if (MENU.col >= MAX_LCD_WIDTH) MENU.col = 0;
             LCD_printch(lcdLine1[MENU.col], MENU.col, MENU.row);
-            LCD_setBlinking(MENU.col, MENU.row);
+            LCD_setBlinking(MENU.col, MENU.row);*/
+			Swi_post(Swi_changeTime);
 			return FXN_SECURITYINFO_TIMEANDDATE;
         case BTN_ENTER  :
         	REG_RTC_SEC_IN = 0;
