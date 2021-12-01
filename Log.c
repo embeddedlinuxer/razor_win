@@ -291,6 +291,7 @@ void dataLog(void)
 {
     FRESULT fr;
 	char dummy[] = "100";
+	Uint32 key;
 
 	/* time validation */
    	if (REG_RTC_SEC == prev_sec)
@@ -469,7 +470,7 @@ void dataLog(void)
 	}
 
 	/* disable interrupt while accessing USB */
-	Swi_disable();
+	key = Swi_disable();
 
 	/* open */
 	snprintf(dummy,2,"%d",USB_RTC_SEC);
@@ -477,7 +478,7 @@ void dataLog(void)
    	if (fr != FR_OK)
    	{
        	errorUsb(fr);
-		Swi_enable();
+		Swi_restore(key);
        	return;
    	}
 
@@ -488,7 +489,7 @@ void dataLog(void)
   	{
 		f_close(&logWriteObject); 
        	errorUsb(fr);
-		Swi_enable();
+		Swi_restore(key);
        	return;
    	}
 
@@ -499,7 +500,7 @@ void dataLog(void)
    	{
 		f_close(&logWriteObject); 
    		errorUsb(FR_DISK_ERR);
-		Swi_enable();
+		Swi_restore(key);
    		return;
    	}
 
@@ -509,13 +510,13 @@ void dataLog(void)
 	if (fr != FR_OK)
    	{    
    		errorUsb(fr);
-		Swi_enable();
+		Swi_restore(key);
    		return;
    	} 
 
     DATA_BUF[0] = '\0';
     TEMP_BUF[0] = '\0';
-	Swi_enable();
+	Swi_restore(key);
 	snprintf(dummy,2,"%d",USB_RTC_SEC);
 	if (isLogData) Clock_start(logData_Clock);
    	return;
@@ -841,9 +842,9 @@ void usbhMscDriveOpen(void)
     /* Initialize the file system. */
     FATFS_init();
 
-    /* Open an instance of the mass storage class driver. */
 	Swi_disable();
 
+    /* Open an instance of the mass storage class driver. */
 	g_ulMSCInstance = USBHMSCDriveOpen(usb_host_params.instanceNo, 0, MSCCallback);
 	
 	for (i=0;i<5;i++)
