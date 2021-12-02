@@ -623,7 +623,7 @@ mnuHomescreenWaterCut(const Uint16 input)
     {
      	TimerWatchdogReactivate(CSL_TMR_1_REGS);
         static int x = 0;
-       	(x < 10) ? updateDisplay(PHASE_DYNAMICS,buf1) : updateDisplay(PHASE_DYNAMICS,buf2); 
+       	(x < 10) ? updateDisplay(" PHASE DYNAMICS ",buf1) : updateDisplay(PHASE_DYNAMICS,buf2); 
 	    x++;
 		if (x>20) isDisplayLogo = FALSE;
         return MNU_HOMESCREEN_WTC;
