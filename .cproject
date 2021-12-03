@@ -230,7 +230,6 @@
 									<listOptionValue builtIn="false" value="${COM_TI_BIOS_INCLUDE_PATH}"/>
 									<listOptionValue builtIn="false" value="${COM_TI_UIA_INCLUDE_PATH}"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
-									<listOptionValue builtIn="false" value="${XDAIS_CG_ROOT}/packages/ti/xdais"/>
 									<listOptionValue builtIn="false" value="${PROJECT_LOC}/Common/include"/>
 									<listOptionValue builtIn="false" value="${PDK_INSTALL_PATH}/ti/drv/usb"/>
 									<listOptionValue builtIn="false" value="${PDK_INSTALL_PATH}"/>

@@ -569,7 +569,7 @@ onFxnEnterPressed(const int currentId, const double max, const double min, VAR *
 	else
 	{
 		Swi_post(Swi_writeNand);
-		(strcmp(val,CHANGE_SUCCESS) == 0) ? memcpy(lcdLine1,CHANGE_SUCCESS,MAX_LCD_WIDTH) : memcpy(lcdLine1,CHANGE_SUCCESS,INVALID);
+		(strcmp(val,CHANGE_SUCCESS) == 0) ? memcpy(lcdLine1,CHANGE_SUCCESS,MAX_LCD_WIDTH) : memcpy(lcdLine1,INVALID, MAX_LCD_WIDTH);
     	return currentId;
 	}
 

@@ -32,7 +32,7 @@
 #define MAX_ENTRY_SIZE  	50 
 #define MAX_HEAD_SIZE   	110 
 #define USB_BLOCK_SIZE		512
-#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*5	// 10 KB /** this needs to be the same or greater than the size of USB_PACKET_LENGTH **/
+#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*6	// 3 KB
 #define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24 	// 12 KB
 
 extern void TimerWatchdogReactivate(unsigned int baseAddr);
@@ -684,7 +684,6 @@ void scanCsvFiles(void)
 	isScanCsvFiles = FALSE;
 
 	FRESULT fr;
-	int i;
     static DIR dir;
     static FILINFO fno;
 	const char path[] = "0:";
