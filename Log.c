@@ -32,16 +32,15 @@
 #define MAX_ENTRY_SIZE  	50 
 #define MAX_HEAD_SIZE   	110 
 #define USB_BLOCK_SIZE		512
-#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*2	// 1 KB
+#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*5	// 10 KB /** this needs to be the same or greater than the size of USB_PACKET_LENGTH **/
 #define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24 	// 12 KB
 
 extern void TimerWatchdogReactivate(unsigned int baseAddr);
-static char dummy[] = "100";
-static char logFile[] = "0:PDI/LOG_01_01_2019.csv";
 static char LOG_HEAD[MAX_HEAD_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static char TEMP_BUF[USB_BLOCK_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static char DATA_BUF[MAX_DATA_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static FIL logWriteObject  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
+static char logFile[] = "0:PDI/LOG_01_01_2019.csv";
 static USB_Handle usb_handle;
 static USB_Params usb_host_params;
 static int time_counter = 1;
@@ -188,6 +187,7 @@ void usbHostIntrConfig(USB_Params* usbParams)
 void
 MSCCallback(uint32_t ulInstance, uint32_t ulEvent, void *pvData)
 {
+	char dummy[] = "100";
 	snprintf(dummy,2,"%d",USB_RTC_SEC);
 
     /*
@@ -290,6 +290,7 @@ void logData(void)
 void dataLog(void)
 {
     FRESULT fr;
+	char dummy[] = "100";
 	Uint32 key;
 
 	/* time validation */
@@ -861,6 +862,7 @@ void usbhMscDriveOpen(void)
 void enumerateUsb(void)
 {
 	int i = 0;
+	char dummy[] = "100";
 	isUsbMounted = FALSE;
 	
     stopClocks();

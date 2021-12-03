@@ -60,7 +60,7 @@
 
 /** \brief USB packet length */
 //#define USB_PACKET_LENGTH       512
-#define USB_PACKET_LENGTH       2048 // DKOH incresed packet size Nov 23, 2021
+#define USB_PACKET_LENGTH       512*5 // DKOH incresed packet size Nov 23, 2021
 
 /** \brief USB transfer size for transfer of data */
 #define MAX_TRANSFER_SIZE       USB_PACKET_LENGTH
