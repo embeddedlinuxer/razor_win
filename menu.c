@@ -750,7 +750,7 @@ mnuHomescreenDensity(const Uint16 input)
         else if (REG_OIL_DENS_CORR_MODE == 2) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MODBUS, CALC_UNIT);
         else if (REG_OIL_DENS_CORR_MODE == 3) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MANUAL, CALC_UNIT);
 
-       	for (index = 0; index<sizeof(densityIndex)/sizeof(densityIndex[0]); index++)
+       	for (index = 0; index<8; index++)
        	{
            	if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
        	}
@@ -2797,7 +2797,7 @@ mnuConfig_DnsCorr_DispUnit(const Uint16 input)
 	static Uint8 index;
     if (isUpdateDisplay)
     {
-        for (index = 0; index<sizeof(densityIndex)/sizeof(densityIndex[0]); index++)
+        for (index = 0; index<8; index++)
         {
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
@@ -2825,7 +2825,7 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
 	static Uint8 index;
     if (isUpdateDisplay)
     {
-        for (index = 0; index<sizeof(densityIndex)/sizeof(densityIndex[0]); index++)
+        for (index = 0; index<8; index++)
         {
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
@@ -3012,7 +3012,7 @@ mnuConfig_DnsCorr_InputUnit(const Uint16 input)
 	static Uint8 index;
     if (isUpdateDisplay)
     {
-        for (index = 0; index<sizeof(densityIndex)/sizeof(densityIndex[0]); index++)
+        for (index = 0; index<8; index++)
         {
             if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
         }
@@ -3051,7 +3051,7 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
 
     if (isUpdateDisplay)
     {
-        for (index = 0; index<sizeof(densityIndex)/sizeof(densityIndex[0]); index++)
+        for (index = 0; index<8; index++)
         {
             if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
         }

@@ -437,14 +437,13 @@ void dataLog(void)
         REG_RELAY_SETPOINT.calc_val
     };
 
-    int ARRAY_SIZE = sizeof LOG_REGS / sizeof LOG_REGS[0];
     int index;
 
     /// read integer type variables
     sprintf(TEMP_BUF,"%02d-%02d-20%02d,%02d:%02d:%02d,",USB_RTC_MON,USB_RTC_DAY,USB_RTC_YR,USB_RTC_HR,USB_RTC_MIN,USB_RTC_SEC);
 
     /// read double type variables 
-    for (index=0;index<ARRAY_SIZE;index++)
+    for (index=0;index<20;index++)
     {
         sprintf(entry,"%g,",LOG_REGS[index]);
         strcat(TEMP_BUF,entry);
