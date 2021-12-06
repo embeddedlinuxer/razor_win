@@ -46,6 +46,7 @@ static USB_Params usb_host_params;
 static int time_counter = 1;
 static int prev_sec = 0;
 unsigned int g_ulMSCInstance = 0; 
+static Uint8 read_counter = 0;
 
 // TIME VARS
 static Uint8 current_day = 99;
@@ -452,8 +453,9 @@ void dataLog(void)
     strcat(TEMP_BUF,"\n");
 	strcat(DATA_BUF,TEMP_BUF);
 
-	if ((MAX_DATA_SIZE - strlen(DATA_BUF)) > USB_BLOCK_SIZE) 
+	if (read_counter<3) 
 	{
+		read_counter++;
 	 	if (isLogData) Clock_start(logData_Clock);
 		return;
 	}
@@ -517,6 +519,7 @@ void dataLog(void)
     DATA_BUF[0] = '\0';
     TEMP_BUF[0] = '\0';
 	Swi_restore(key);
+	read_counter = 0;
 	snprintf(dummy,2,"%d",USB_RTC_SEC);
 	if (isLogData) Clock_start(logData_Clock);
    	return;

@@ -174,7 +174,7 @@ Process_Menu(void)
 	/// Start main loop
 	while (1)
 	{
-		/// Reset watchdog timer. Otherwise, resets the system. 
+		/* Reset watchdog timer. Otherwise, resets the system. */
      	TimerWatchdogReactivate(CSL_TMR_1_REGS);
 
         if (COIL_UPDATE_FACTORY_DEFAULT.val) storeUserDataToFactoryDefault();
@@ -248,15 +248,10 @@ Process_Menu(void)
 		Swi_restore(key);
 
 		////////////////////////////////////////////////////////////////////////////
-		// DECIDE NEXT STATE
+		// NEXT STATE
 		////////////////////////////////////////////////////////////////////////////
 
-		if (MENU.isHomeScreen) 								// back to homescreen?
-		{
-			nextState = mnuHomescreenWaterCut(NULL);		// return home
-			MENU.isHomeScreen = FALSE;
-		}
-		else nextState = stateFxn(btnIndex); 				// next state
+		nextState = stateFxn(btnIndex); 				// next state
            
 		////////////////////////////////////////////////////////////////////////////
         // UPDATE STATE	
@@ -607,36 +602,43 @@ mnuHomescreenWaterCut(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_WTC;
 
-    static BOOL isDisplayLogo = TRUE;
+    static Uint8 isDisplayLogo = 1;
+	static Uint8 disp_counter = 0;
 	static char buf1[MAX_LCD_WIDTH];
 	static char buf2[MAX_LCD_WIDTH];
-	static Uint8 isInit = 1;
-
-	if (isInit)
-	{
-		isInit = FALSE;
-		sprintf(buf1, " Razor V%5s ", FIRMWARE_VERSION);
-		sprintf(buf2, "   SN: %06d", REG_SN_PIPE);
-	}
 
     if (isDisplayLogo)
     {
-     	TimerWatchdogReactivate(CSL_TMR_1_REGS);
-        static int x = 0;
+		static Uint8 isInit = 1;
+       	static int x = 0;
+
+		if (isInit)
+		{
+			isInit = FALSE;
+			sprintf(buf1, " Razor V%5s ", FIRMWARE_VERSION);
+			sprintf(buf2, "   SN: %06d", REG_SN_PIPE);
+		}
+
        	(x < 10) ? updateDisplay(PHASE_DYNAMICS,buf1) : updateDisplay(PHASE_DYNAMICS,buf2); 
 	    x++;
 		if (x>20) isDisplayLogo = FALSE;
         return MNU_HOMESCREEN_WTC;
     }
 
-	/* update watercut */
-	snprintf(lcdLine0,MAX_LCD_WIDTH+1,"Watercut %6.2f%%", Round_N(REG_WATERCUT.calc_val,2));
-
-	/* update temperature */
-	(REG_TEMPERATURE.unit == u_temp_C) ? snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cC", REG_TEMP_USER.val, LCD_DEGREE) : snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cF", REG_TEMP_USER.val, LCD_DEGREE);
-
-	/* update display */
-	(isUpdateDisplay) ? updateDisplay(lcdLine0, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay); 
+	if (isUpdateDisplay) 
+	{
+		snprintf(lcdLine0,MAX_LCD_WIDTH+1,"Watercut %6.2f%%", Round_N(REG_WATERCUT.calc_val,2));
+		(REG_TEMPERATURE.unit == u_temp_C) ? snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cC", REG_TEMP_USER.val, LCD_DEGREE) : snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cF", REG_TEMP_USER.val, LCD_DEGREE);
+		updateDisplay(lcdLine0, lcdLine1);
+	}
+	else if (disp_counter > 10) 
+	{
+		disp_counter = 0;
+		snprintf(lcdLine0,MAX_LCD_WIDTH+1,"Watercut %6.2f%%", Round_N(REG_WATERCUT.calc_val,2));
+		(REG_TEMPERATURE.unit == u_temp_C) ? snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cC", REG_TEMP_USER.val, LCD_DEGREE) : snprintf(lcdLine1,MAX_LCD_WIDTH+1,"Temp%10.1f%cF", REG_TEMP_USER.val, LCD_DEGREE);
+		updateDisplay(lcdLine0, lcdLine1);
+	}
+	else disp_counter++;
 
 	switch (input)	{
 		case BTN_VALUE 	: return onNextPressed(MNU_HOMESCREEN_FREQ);
