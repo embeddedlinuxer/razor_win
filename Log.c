@@ -32,8 +32,8 @@
 #define MAX_ENTRY_SIZE  	50 
 #define MAX_HEAD_SIZE   	110 
 #define USB_BLOCK_SIZE		512
-#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*6	// 3 KB
-#define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24 	// 12 KB
+#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*4
+#define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24
 
 extern void TimerWatchdogReactivate(unsigned int baseAddr);
 static char LOG_HEAD[MAX_HEAD_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
@@ -45,8 +45,8 @@ static USB_Handle usb_handle;
 static USB_Params usb_host_params;
 static int time_counter = 1;
 static int prev_sec = 0;
-unsigned int g_ulMSCInstance = 0; 
 static Uint8 read_counter = 0;
+unsigned int g_ulMSCInstance = 0; 
 
 // TIME VARS
 static Uint8 current_day = 99;
@@ -255,6 +255,7 @@ void resetUsbStaticVars(void)
 {
 	current_day = 99;
 	usbStatus = 0;
+	read_counter = 0;
 }
 
 void errorUsb(FRESULT fr)
@@ -278,22 +279,16 @@ void errorUsb(FRESULT fr)
     else if (fr == FR_TIMEOUT) usbStatus = 14;
     else if (fr == FR_LOCKED) usbStatus = 15;
     else if (fr == FR_NOT_ENOUGH_CORE) usbStatus = 16;
-    else usbStatus = 0;
+    else usbStatus = 2;
 
     return;
 }
 
+
 void logData(void)
 {
-	Swi_post(Swi_dataLog);
-}
-
-void dataLog(void)
-{
     FRESULT fr;
-	char dummy[] = "100";
-	Uint32 key;
-
+		
 	/* time validation */
    	if (REG_RTC_SEC == prev_sec)
 	{	
@@ -321,6 +316,9 @@ void dataLog(void)
 	if (USB_RTC_MON != REG_RTC_MON) USB_RTC_MON = REG_RTC_MON;
 	if (USB_RTC_YR != REG_RTC_YR)   USB_RTC_YR = REG_RTC_YR;
 
+	/* disable interrupt while accessing USB */
+	Swi_disable();
+
    	/* need a new file? */
    	if (current_day != USB_RTC_DAY) 
    	{   
@@ -332,6 +330,7 @@ void dataLog(void)
         if ((fr != FR_EXIST) && (fr != FR_OK))
         {
             errorUsb(fr);
+			Swi_enable();
             return;
         }
 
@@ -345,6 +344,7 @@ void dataLog(void)
             if (fr == FR_OK) 
 			{
 	 			if (isLogData) Clock_start(logData_Clock);
+				Swi_enable();
 				return;
 			}
         }
@@ -354,6 +354,7 @@ void dataLog(void)
        	if (fr != FR_OK) 
        	{
            	errorUsb(fr);
+			Swi_enable();
            	return;
        	}
 
@@ -363,6 +364,7 @@ void dataLog(void)
        	if (f_puts(LOG_HEAD,&logWriteObject) == EOF) 
        	{
            	errorUsb(FR_DISK_ERR);
+			Swi_enable();
            	return;
        	}
 
@@ -370,6 +372,7 @@ void dataLog(void)
        	if (fr != FR_OK)
        	{
            	errorUsb(fr);
+			Swi_enable();
            	return;
        	}
 
@@ -379,6 +382,7 @@ void dataLog(void)
        	if (f_puts(LOG_HEAD,&logWriteObject) == EOF) 
        	{
            	errorUsb(FR_DISK_ERR);
+			Swi_enable();
            	return;
        	}
 
@@ -386,6 +390,7 @@ void dataLog(void)
        	if (fr != FR_OK)
        	{
            	errorUsb(fr);
+			Swi_enable();
            	return;
        	}
 
@@ -395,6 +400,7 @@ void dataLog(void)
        	if (f_puts(LOG_HEAD,&logWriteObject) == EOF) 
        	{
            	errorUsb(FR_DISK_ERR);
+			Swi_enable();
            	return;
        	}
 
@@ -403,11 +409,13 @@ void dataLog(void)
        	if (fr != FR_OK)
        	{
            	errorUsb(fr);
+			Swi_enable();
            	return;
        	}
 
 		TimerWatchdogReactivate(CSL_TMR_1_REGS);
 	 	if (isLogData) Clock_start(logData_Clock);
+		Swi_enable();
 		return;
    	}   
 
@@ -453,75 +461,63 @@ void dataLog(void)
     strcat(TEMP_BUF,"\n");
 	strcat(DATA_BUF,TEMP_BUF);
 
-	if (read_counter<3) 
+	if (read_counter < 3) 
 	{
 		read_counter++;
 	 	if (isLogData) Clock_start(logData_Clock);
+		Swi_enable();
 		return;
 	}
 
-	/* disable interrupt while accessing USB */
-	key = Swi_disable();
-
-	/* error check before opening file descriptor */
-	if (f_error(&logWriteObject) != 0) 
-	{
-		Swi_restore(key);
-		DATA_BUF[0] = '\0';
-    	TEMP_BUF[0] = '\0';
-		resetCsvStaticVars();
-		resetUsbStaticVars();
-       	return;
-	}
-
-	/* open */
-	snprintf(dummy,2,"%d",USB_RTC_SEC);
+	/// open
    	fr = f_open(&logWriteObject, logFile, FA_WRITE | FA_OPEN_EXISTING);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
    	if (fr != FR_OK)
    	{
+		f_close(&logWriteObject); 
        	errorUsb(fr);
-		Swi_restore(key);
+		Swi_enable();
        	return;
    	}
 
-	/* append mode */
-	snprintf(dummy,2,"%d",USB_RTC_SEC);
+	/// append mode 
   	fr = f_lseek(&logWriteObject,f_size(&logWriteObject));
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
   	if (fr != FR_OK)
   	{
 		f_close(&logWriteObject); 
        	errorUsb(fr);
-		Swi_restore(key);
+		Swi_enable();
        	return;
    	}
 
-  	/* write */
-	snprintf(dummy,2,"%d",USB_RTC_SEC);
+  	/// write
 	fr = f_puts(DATA_BUF,&logWriteObject);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
 	if (fr == EOF)
    	{
 		f_close(&logWriteObject); 
    		errorUsb(FR_DISK_ERR);
-		Swi_restore(key);
+		Swi_enable();
    		return;
    	}
 
-	/* close */
-	snprintf(dummy,2,"%d",USB_RTC_SEC);
+	/// close
    	fr = f_close(&logWriteObject);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
 	if (fr != FR_OK)
    	{    
    		errorUsb(fr);
-		Swi_restore(key);
+		Swi_enable();
    		return;
    	} 
 
     DATA_BUF[0] = '\0';
     TEMP_BUF[0] = '\0';
-	Swi_restore(key);
 	read_counter = 0;
-	snprintf(dummy,2,"%d",USB_RTC_SEC);
+	TimerWatchdogReactivate(CSL_TMR_1_REGS);
 	if (isLogData) Clock_start(logData_Clock);
+	Swi_enable();
    	return;
 }
 
@@ -686,6 +682,7 @@ void scanCsvFiles(void)
 	isScanCsvFiles = FALSE;
 
 	FRESULT fr;
+	int i;
     static DIR dir;
     static FILINFO fno;
 	const char path[] = "0:";
@@ -825,29 +822,22 @@ void uploadCsv(void)
 void usbhMscDriveOpen(void)
 {
 	int i;
-	USB_Config* usb_config;
     usb_host_params.usbMode      = USB_HOST_MSC_MODE;
     usb_host_params.instanceNo   = USB_INSTANCE;
     usb_handle = USB_open(usb_host_params.instanceNo, &usb_host_params);
 
+    // failed to open
     if (usb_handle == 0) return;
 
-	/* disable all SW interrupts while accessing critical section */
-	Swi_disable();
-
-    /* setup INT Controller */
+    // Setup the INT Controller
 	usbHostIntrConfig (&usb_host_params);
 
-	/* enable usb 3.0 super speed && DMA MODE */
-    usb_config->usb30Enabled = TRUE;
-    usb_handle->usb30Enabled = TRUE;
-    usb_handle->dmaEnabled = TRUE;
-    usb_handle->handleCppiDmaInApp = TRUE;
-	
-    /* Initialize the file system. */
+    // Initialize the file system.
     FATFS_init();
 
-    /* Open an instance of the mass storage class driver. */
+    // Open an instance of the mass storage class driver.
+	Swi_disable();
+
 	g_ulMSCInstance = USBHMSCDriveOpen(usb_host_params.instanceNo, 0, MSCCallback);
 	
 	for (i=0;i<5;i++)
@@ -877,7 +867,6 @@ void enumerateUsb(void)
         	if(g_eState == STATE_DEVICE_ENUM)
         	{
 				snprintf(dummy,2,"%d",USB_RTC_SEC);
-				TimerWatchdogReactivate(CSL_TMR_1_REGS);
             	if (USBHMSCDriveReady(g_ulMSCInstance) != 0) usb_osalDelayMs(300);
             	if (!g_fsHasOpened && (FATFS_open(0U, NULL, &fatfsHandle) == FR_OK)) g_fsHasOpened = 1;
 				isUsbMounted = TRUE;
@@ -887,7 +876,7 @@ void enumerateUsb(void)
 
 		i++;
 		TimerWatchdogReactivate(CSL_TMR_1_REGS);
-		usb_osalDelayMs(300);
+		snprintf(dummy,2,"%d",USB_RTC_SEC);
     }
 
     startClocks();
