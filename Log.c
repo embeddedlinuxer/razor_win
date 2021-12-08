@@ -11,6 +11,18 @@
 *
 * Copyright (c) 2018 Phase Dynamics Inc. ALL RIGHTS RESERVED.
 *------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------
+* Razor USB does the following things.
+*
+* 1. Firmware upgrade (menu 3.9)
+* 2. CSV file upload (menu 3.8)
+* 3. CSV file download (menu 3.8)
+* 4. Data logging (menu 2.3.1)
+* 
+* However, data logging is not stable and most likely will stop logging after running some time due to
+* USB failures. TI RTOS (SYS/BIOS) usb tranmission speed is extremly slow in host 
+* mode, which is, "I think", the root cause of our data logging failures.
+*------------------------------------------------------------------------*/
 
 #include <stdlib.h>
 #include <string.h>
@@ -36,19 +48,19 @@
 #define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24
 
 extern void TimerWatchdogReactivate(unsigned int baseAddr);
+
+static USB_Handle usb_handle;
+static USB_Params usb_host_params;
+static FIL logWriteObject  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static char LOG_HEAD[MAX_HEAD_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static char TEMP_BUF[USB_BLOCK_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static char DATA_BUF[MAX_DATA_SIZE]  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
-static FIL logWriteObject  __attribute__ ((aligned (SOC_CACHELINE_SIZE)));
 static char logFile[] = "0:PDI/LOG_01_01_2019.csv";
-static USB_Handle usb_handle;
-static USB_Params usb_host_params;
 static int time_counter = 1;
 static int prev_sec = 0;
 static Uint8 read_counter = 0;
-unsigned int g_ulMSCInstance = 0; 
+static unsigned int g_ulMSCInstance = 0; 
 
-// TIME VARS
 static Uint8 current_day = 99;
 static int USB_RTC_SEC = 0; 
 static int USB_RTC_MIN = 0; 
@@ -56,6 +68,7 @@ static int USB_RTC_HR = 0;
 static int USB_RTC_DAY = 0; 
 static int USB_RTC_MON = 0; 
 static int USB_RTC_YR = 0; 
+
 /* ========================================================================== */
 /*                                Prototypes                                  */
 /* ========================================================================== */

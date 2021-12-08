@@ -1,4 +1,5 @@
-/* This Information is proprietary to Phase Dynamics Inc, Richardson, Texas * and MAY NOT be copied by any method or incorporated into another program
+/* This Information is proprietary to Phase Dynamics Inc, Richardson, Texas 
+* and MAY NOT be copied by any method or incorporated into another program
 * without the express written consent of Phase Dynamics Inc. This information
 * or any portion thereof remains the property of Phase Dynamics Inc.
 * The information contained herein is believed to be accurate and Phase
@@ -40,18 +41,14 @@
 #define MENU_H
 #include "Menu.h"
 
-static int blinker = 0;             // MENU ID BLINKER 
-static BOOL isOn = FALSE;           // LINE1 BLINKER
-static BOOL isMessage = FALSE;      // Message to display? 
-static BOOL isTechModeRequested = FALSE;
+static int blinker = 0;             		// to control menu id blinker 
+static BOOL isOn = FALSE;           		// to control lcd line_1 blinker
+static BOOL isMessage = FALSE;      		// to display pass/fail/cancel message
+static BOOL isTechModeRequested = FALSE; 	// to access technicial mode
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-///	
-///	PROGRESS BAR FOR CAPTURING OIL
-///	
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+/// oil capture progress bar
+//////////////////////////////////////////////////////////////
 
 static char prg0[]  = "[..............]";
 static char prg1[]  = "[#.............]";
@@ -69,15 +66,10 @@ static char prg12[] = "[############..]";
 static char prg13[] = "[#############.]";
 static char prg14[] = "[##############]";
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-///	
-///	DENSITY UNITS
-///	
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+///	density units
+//////////////////////////////////////////////////////////////
 
-static const char * USB_CODE[18] = {DISABLED,ENABLED,USB_ERROR2,USB_ERROR3,USB_ERROR4,USB_ERROR5,USB_ERROR6,USB_ERROR7,USB_ERROR8,USB_ERROR9,USB_ERROR10,USB_ERROR11,USB_ERROR12,USB_ERROR13,USB_ERROR14,USB_ERROR15,USB_ERROR16,USB_ERROR17};
 static const char * statusMode[2]    = {RELAY_OFF, RELAY_ON}; 
 static const char * phaseMode[2]     = {WATER_PHASE, OIL_PHASE}; 
 static const char * relayMode[4]     = {WATERCUT, PHASE, ERROR, MANUAL}; 
@@ -86,14 +78,11 @@ static const char * errorMode[3] 	 = {DISABLE, AO_ALARM_HIGH, AO_ALARM_LOW};
 static const char * densityMode[4] 	 = {DISABLE, ANALOG_INPUT, MODBUS, MANUAL};
 static const char * densityIndex[8]  = {KG_M3, KG_M3_15C, API, API_60F, LBS_FT3, LBS_FT3_60F, SG, SG_15C}; 
 static const Uint8 densityUnit[8] 	 = {u_mpv_kg_cm, u_mpv_kg_cm_15C, u_mpv_deg_API, u_mpv_deg_API_60F, u_mpv_lbs_cf, u_mpv_lbs_cf_60F, u_mpv_sg, u_mpv_sg_15C};
+static const char * USB_CODE[18] 	 = {DISABLED,ENABLED,USB_ERROR2,USB_ERROR3,USB_ERROR4,USB_ERROR5,USB_ERROR6,USB_ERROR7,USB_ERROR8,USB_ERROR9,USB_ERROR10,USB_ERROR11,USB_ERROR12,USB_ERROR13,USB_ERROR14,USB_ERROR15,USB_ERROR16,USB_ERROR17};
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-/////
-///// FUNCTION DEFINITIONS
-/////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+/// function definitions
+//////////////////////////////////////////////////////////////
 
 void setupMenu (void)
 {
@@ -108,45 +97,20 @@ void setupMenu (void)
 }
 
 //////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-////
-//// ISR_Process_Menu()
-//// 
-//// Clock Handle:       Process_Menu_Clock
-////
-//////////////////////////////////////////////////////////////
+/// ISR_Process_Menu()
+/// Clock Handle: Process_Menu_Clock
 //////////////////////////////////////////////////////////////
 
 void 
 ISR_Process_Menu (void)
 {
-
-//////////////////////////////////////////////////////////////
-/// Semaphore_post() is designed specifically to be called from 
-/// ANY thread (Hwi, Swi, Task) in order to ready a Task that 
-/// may be blocked on the semaphore, waiting for some event to 
-/// occur.
-/// Semaphore_pend() is a blocking API, and as such must only 
-/// be called from a Task context.
-//////////////////////////////////////////////////////////////
-
 	Semaphore_post(Menu_sem);
 }
 
 //////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-////
-//// Process_Menu()
-//// 
-//// Task Handle:		Menu_task 
-//// Semaphore Pend:	Menu_sem
-////
-//// semaphore1Params.instance.name = "Menu_sem";
-//// Program.global.Menu_sem = Semaphore.create(0, semaphore1Params);
-//// task1Params.instance.name = "Menu_task";
-//// Program.global.Menu_task = Task.create("&Process_Menu", task1Params);
-////
-//////////////////////////////////////////////////////////////
+/// Process_Menu()
+/// Task Handle:		Menu_task 
+/// Semaphore Pend:	Menu_sem
 //////////////////////////////////////////////////////////////
 
 void 
@@ -162,10 +126,10 @@ Process_Menu(void)
     Uint8   isValidInput = TRUE;
 	int i;
 	
-	/// function pointer
+	/* function pointer */
 	stateFxn = MENU_TABLE[0].fxnPtr;
 
-	/// Initialize menu
+	/* Initialize menu */
 	setupMenu();						 
     
     /// Initialize buttons
@@ -220,7 +184,7 @@ Process_Menu(void)
 		    {
 			    if (buttons[i] != prevButtons[i])				// button pressed?
 			    {
-				    if (buttons[i] == 1) 							// rising edge?
+				    if (buttons[i] == 1) 						// rising edge?
 				    {
 					    if (MENU.debounceDone) 					// debounce clock finished?
 					    {
@@ -230,11 +194,10 @@ Process_Menu(void)
 						    Clock_start(DebounceMBVE_Clock);	// start the debounce clock
 						    needRelayClick 		= TRUE;
 
-							/// Reset watchdog timer. Otherwise, resets the system. 
      						TimerWatchdogReactivate(CSL_TMR_1_REGS);
 					    }
 				    }
-				    else										// falling edge of STEP button
+				    else										// falling edge
 				    { 
 					    prevButtons[i] 		= buttons[i];
 					    MENU.isPressAndHold	= FALSE; 			// mnu button no longer being held down
@@ -1213,7 +1176,7 @@ mnuConfig_Analyzer_TempUnit(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_TEMPUNIT;
 
 	static char buf[MAX_LCD_WIDTH];
-    (REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%15cC", DEGREE_CHAR) : sprintf(buf,"%15cF", DEGREE_CHAR);
+    (REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%15cC", LCD_DEGREE) : sprintf(buf,"%15cF", LCD_DEGREE);
 	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 
 	if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_TEMPUNIT, lcdLine1);
@@ -1237,7 +1200,7 @@ fxnConfig_Analyzer_TempUnit(const Uint16 input)
 	static char buf[MAX_LCD_WIDTH];
 
 	static BOOL isCelsius = TRUE;
-   	(isCelsius) ? sprintf(buf,"%15cC", DEGREE_CHAR) : sprintf(buf,"%15cF", DEGREE_CHAR);
+   	(isCelsius) ? sprintf(buf,"%15cC", LCD_DEGREE) : sprintf(buf,"%15cF", LCD_DEGREE);
 	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	blinkLcdLine1(lcdLine1, BLANK);
 
