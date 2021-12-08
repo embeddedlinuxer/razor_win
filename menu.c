@@ -29,7 +29,6 @@
 #include <time.h>
 #include <ti/sysbios/hal/Seconds.h>
 #include "Globals.h"
-#include "Security.h"
 #include "nandwriter.h"
 #include "Errors.h"
 #include "Utils.h"
