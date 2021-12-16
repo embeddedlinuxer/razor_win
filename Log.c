@@ -44,7 +44,7 @@
 #define MAX_ENTRY_SIZE  	50 
 #define MAX_HEAD_SIZE   	110 
 #define USB_BLOCK_SIZE		512
-#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*4
+#define MAX_DATA_SIZE  		USB_BLOCK_SIZE*400 // 200 KB
 #define MAX_CSV_SIZE   		USB_BLOCK_SIZE*24
 
 extern void TimerWatchdogReactivate(unsigned int baseAddr);
@@ -474,7 +474,7 @@ void logData(void)
     strcat(TEMP_BUF,"\n");
 	strcat(DATA_BUF,TEMP_BUF);
 
-	if (read_counter < 3) 
+	if (read_counter < 40) // 80 seconds
 	{
 		read_counter++;
 	 	if (isLogData) Clock_start(logData_Clock);
