@@ -615,8 +615,11 @@ mnuHomescreenFrequency(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_FREQ;
 
+	static char buf[MAX_LCD_WIDTH];
+
 	/* update frequency */	
-	snprintf(lcdLine1,MAX_LCD_WIDTH+1,"%12.3f Mhz", Round_N(REG_FREQ.calc_val,3));
+	sprintf(buf,"%*.3fMhz",16-strlen("Mhz"),Round_N(REG_FREQ.calc_val,3));
+	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(FREQUENCY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
@@ -634,8 +637,11 @@ mnuHomescreenReflectedPower(const Uint16 input)
 {	
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_RP;
 
+	static char buf[MAX_LCD_WIDTH];
+
 	/* update refelected power */	
-    snprintf(lcdLine1,MAX_LCD_WIDTH+1,"%15.3fV", Round_N(REG_OIL_RP,3));
+	sprintf(buf,"%*.3fV",16-strlen("V"),Round_N(REG_OIL_RP,3));
+	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(REFLECTEDPOWER, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
@@ -653,8 +659,11 @@ mnuHomescreenPhaseThreshold(const Uint16 input)
 {	
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_PT;
 
+	static char buf[MAX_LCD_WIDTH];
+
 	/* update phase threshold */
-    snprintf(lcdLine1,MAX_LCD_WIDTH+1,"%15.3fV",Round_N(REG_OIL_PT,3));
+	sprintf(buf,"%*.3fV",16-strlen("V"),Round_N(REG_OIL_PT,3));
+	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(PHASETHRESHOLD, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
@@ -720,8 +729,7 @@ mnuHomescreenDensity(const Uint16 input)
        	}
     }
 
-	sprintf(buf,"%.2f",REG_OIL_DENSITY.val);
-	strcat(buf,densityIndex[index]);
+	sprintf(buf,"%*.2f%s",16-strlen(densityIndex[index]),REG_OIL_DENSITY.val,densityIndex[index]);
 	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	(isUpdateDisplay) ? updateDisplay(DENSITY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
@@ -2758,7 +2766,10 @@ Uint16
 mnuConfig_DnsCorr_DispUnit(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_DISPUNIT;
+
 	static Uint8 index;
+	static char buf[MAX_LCD_WIDTH];
+
     if (isUpdateDisplay)
     {
         for (index = 0; index<8; index++)
@@ -2766,7 +2777,8 @@ mnuConfig_DnsCorr_DispUnit(const Uint16 input)
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
 
-		memcpy(lcdLine1,densityIndex[index],MAX_LCD_WIDTH);
+		sprintf(buf,"%*s",16,densityIndex[index]);
+		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
@@ -2786,7 +2798,10 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_CFG_DNSCORR_DISPUNIT;
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_DISPUNIT, MNU_CFG_DNSCORR_DISPUNIT); }
+
 	static Uint8 index;
+	static char buf[MAX_LCD_WIDTH];
+
     if (isUpdateDisplay)
     {
         for (index = 0; index<8; index++)
@@ -2794,11 +2809,13 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
 
-		memcpy(lcdLine1,densityIndex[index],MAX_LCD_WIDTH);
+		sprintf(buf,"%*s",16,densityIndex[index]);
+		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
-	memcpy(lcdLine1,densityIndex[index],MAX_LCD_WIDTH);
+	sprintf(buf,"%*s",16,densityIndex[index]);
+	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2973,7 +2990,10 @@ Uint16
 mnuConfig_DnsCorr_InputUnit(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_INPUTUNIT;
+
 	static Uint8 index;
+	static char buf[MAX_LCD_WIDTH];
+
     if (isUpdateDisplay)
     {
         for (index = 0; index<8; index++)
@@ -2981,7 +3001,8 @@ mnuConfig_DnsCorr_InputUnit(const Uint16 input)
             if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
         }
 
-		memcpy(lcdLine1,densityIndex[index],MAX_LCD_WIDTH);
+		sprintf(buf,"%*s",16,densityIndex[index]);
+		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	    updateDisplay(CFG_DNSCORR_INPUTUNIT, lcdLine1);
     }
 
@@ -3010,6 +3031,7 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
 	double tempUrvVal = 0;
 
 	static Uint8 index;
+	static char buf[MAX_LCD_WIDTH];
 
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_INPUTUNIT, MNU_CFG_DNSCORR_INPUTUNIT); }
 
@@ -3020,11 +3042,13 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
             if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
         }
 
-		memcpy(lcdLine1,densityIndex[index],MAX_LCD_WIDTH);
+		sprintf(buf,"%*s",16,densityIndex[index]);
+		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	    updateDisplay(CFG_DNSCORR_INPUTUNIT, lcdLine1);
     }
 
-	memcpy(lcdLine1,densityIndex[index],MAX_LCD_WIDTH);
+	sprintf(buf,"%*s",16,densityIndex[index]);
+	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
