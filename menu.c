@@ -577,13 +577,14 @@ mnuHomescreenWaterCut(const Uint16 input)
 		if (isInit)
 		{
 			isInit = FALSE;
-			snprintf(buf1,MAX_LCD_WIDTH," Razor V%5s  ", FIRMWARE_VERSION);
-			snprintf(buf2,MAX_LCD_WIDTH,"   SN: %06d   ", REG_SN_PIPE);
+			sprintf(buf1, " Razor V%5s ", FIRMWARE_VERSION);
+			sprintf(buf2, "   SN: %06d", REG_SN_PIPE);
 		}
 
-       	(x < 8) ? updateDisplay(" PHASE DYNAMICS ",buf1) : updateDisplay(" PHASE DYNAMICS ",buf2); 
+       	(x < 10) ? updateDisplay(PHASE_DYNAMICS,buf1) : updateDisplay(PHASE_DYNAMICS,buf2); 
 	    x++;
-		if (x>10) isDisplayLogo = FALSE;
+		TimerWatchdogReactivate(CSL_TMR_1_REGS);
+		if (x>20) isDisplayLogo = FALSE;
         return MNU_HOMESCREEN_WTC;
     }
 
