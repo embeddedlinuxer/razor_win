@@ -572,19 +572,26 @@ mnuHomescreenWaterCut(const Uint16 input)
     if (isDisplayLogo)
     {
 		static Uint8 isInit = 1;
-       	static int x = 0;
+       	static Uint8 logoCounter = 0;
 
 		if (isInit)
 		{
 			isInit = FALSE;
 			sprintf(buf1, " Razor V%5s ", FIRMWARE_VERSION);
 			sprintf(buf2, "   SN: %06d", REG_SN_PIPE);
+			updateDisplay(PHASE_DYNAMICS,buf1);
+			isUpdateDisplay = 1;
 		}
 
-       	(x < 10) ? updateDisplay(PHASE_DYNAMICS,buf1) : updateDisplay(PHASE_DYNAMICS,buf2); 
-	    x++;
-		TimerWatchdogReactivate(CSL_TMR_1_REGS);
-		if (x>20) isDisplayLogo = FALSE;
+		if (isUpdateDisplay && (logoCounter > 10)) updateDisplay(PHASE_DYNAMICS,buf2); 
+	    logoCounter++;
+		
+		if (logoCounter>20) 
+		{
+			isDisplayLogo = FALSE;
+			isUpdateDisplay = 1;
+		}
+
         return MNU_HOMESCREEN_WTC;
     }
 
