@@ -623,11 +623,8 @@ mnuHomescreenFrequency(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_FREQ;
 
-	static char buf[MAX_LCD_WIDTH];
-
 	/* update frequency */	
-	sprintf(buf,"%*.3fMhz",16-strlen("Mhz"),Round_N(REG_FREQ.calc_val,3));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*.3fMhz",13,Round_N(REG_FREQ.calc_val,3));
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(FREQUENCY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
@@ -645,11 +642,8 @@ mnuHomescreenReflectedPower(const Uint16 input)
 {	
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_RP;
 
-	static char buf[MAX_LCD_WIDTH];
-
 	/* update refelected power */	
-	sprintf(buf,"%*.3fV",16-strlen("V"),Round_N(REG_OIL_RP,3));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*.3fV",15,Round_N(REG_OIL_RP,3));
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(REFLECTEDPOWER, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
@@ -667,11 +661,8 @@ mnuHomescreenPhaseThreshold(const Uint16 input)
 {	
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_PT;
 
-	static char buf[MAX_LCD_WIDTH];
-
 	/* update phase threshold */
-	sprintf(buf,"%*.3fV",16-strlen("V"),Round_N(REG_OIL_PT,3));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*.3fV",15,Round_N(REG_OIL_PT,3));
 
 	/* update display */
 	(isUpdateDisplay) ? updateDisplay(PHASETHRESHOLD, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
@@ -688,12 +679,10 @@ mnuHomescreenAvgTemp(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_AVT;
 	static BOOL isEntered = FALSE;
-	static char buf[MAX_LCD_WIDTH];
     if (isMessage) { return notifyMessageAndExit(MNU_HOMESCREEN_AVT,MNU_HOMESCREEN_AVT); }
 
     displayLcd(AVERAGETEMP, LCD0);
-	(REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%14.1f%cC", REG_TEMP_AVG.val, LCD_DEGREE) : sprintf(buf,"%14.1f%cF", REG_TEMP_AVG.val, LCD_DEGREE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	(REG_TEMPERATURE.unit == u_temp_C) ? sprintf(lcdLine1,"%*.1f%cC",14, REG_TEMP_AVG.val, LCD_DEGREE) : sprintf(lcdLine1,"%*.1f%cF",14, REG_TEMP_AVG.val, LCD_DEGREE);
 	(isEntered) ? blinkLcdLine1(lcdLine1, STEP_CONFIRM) : blinkLcdLine1(lcdLine1, ENTER_RESET);
 
 	switch (input)	
@@ -723,7 +712,6 @@ mnuHomescreenDensity(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_DST;
 
 	static Uint8 index;
-	static char buf[MAX_LCD_WIDTH];
 
     if (isUpdateDisplay) 
     {
@@ -737,8 +725,7 @@ mnuHomescreenDensity(const Uint16 input)
        	}
     }
 
-	sprintf(buf,"%*.2f%s",16-strlen(densityIndex[index]),REG_OIL_DENSITY.val,densityIndex[index]);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*.2f%s",16-strlen(densityIndex[index]),REG_OIL_DENSITY.val,densityIndex[index]);
 	(isUpdateDisplay) ? updateDisplay(DENSITY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
 	 switch (input)  {
@@ -759,8 +746,6 @@ mnuHomescreenDiagnostics(const Uint16 input)
 	static Uint8 errors[MAX_ERRORS];
 	static Uint8 errorCount = 0;
 	static int DIAGNOSTICS_PREV = -1;
-	static char buf0[MAX_LCD_WIDTH];
-	static char buf1[MAX_LCD_WIDTH];
 
 	if (isUpdateDisplay || (DIAGNOSTICS != DIAGNOSTICS_PREV))
 	{
@@ -769,17 +754,14 @@ mnuHomescreenDiagnostics(const Uint16 input)
 		if (errorCount > 0)
 		{
 			index = errors[i];	// Get error index
-			sprintf(buf0,"Diagnostics: %d", errorCount);
-			sprintf(buf1,"%16s",errorType[index]);
-			memcpy(lcdLine0,buf0,MAX_LCD_WIDTH);
-			memcpy(lcdLine1,buf1,MAX_LCD_WIDTH);
+			sprintf(lcdLine0,"Diagnostics: %*d",3, errorCount);
+			sprintf(lcdLine1,"%*s",16,errorType[index]);
 			updateDisplay(lcdLine0,lcdLine1);
 		}
 		else
 		{
 			errorCount = 0;
-			sprintf(buf0,"Diagnostics: %d", errorCount);
-			memcpy(lcdLine0,buf0,MAX_LCD_WIDTH);
+			sprintf(lcdLine0,"Diagnostics: %*d",3, errorCount);
 			updateDisplay(lcdLine0,BLANK);
 		}
 	} 
@@ -802,11 +784,9 @@ fxnHomescreenDiagnostics(const Uint16 input)
 	static Uint8 errors[MAX_ERRORS];
 	static Uint8 errorCount = 0;
 	static int DIAGNOSTICS_PREV = -1;
-	static char buf[MAX_LCD_WIDTH];
 
 	if (DIAGNOSTICS != DIAGNOSTICS_PREV) diagnose(&i, &index, &errorCount, errors, &DIAGNOSTICS_PREV);
-	sprintf(buf,"Diagnostics: %d", errorCount);
-	memcpy(lcdLine0,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine0,"Diagnostics: %*d",3, errorCount);
 	displayLcd(lcdLine0,LCD0);
 	index = errors[i];	// Get error index
 	displayLcd(errorType[index],LCD1);
@@ -827,9 +807,9 @@ Uint16
 mnuHomescreenSerialNumber(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_SRN;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%16u",(Uint16)REG_SN_PIPE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*u",16,(Uint16)REG_SN_PIPE);
+
 	if (isUpdateDisplay) updateDisplay(SERIALNUMBER, lcdLine1);
 
 	switch (input)  {
@@ -1148,9 +1128,7 @@ mnuConfig_Analyzer_ProcsAvg(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_PROCSAVG;
 
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf,"%8.0f Samples", REG_PROC_AVGING.calc_val);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*.0f Samples",8, REG_PROC_AVGING.calc_val);
 
 	if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_PROCSAVG, lcdLine1);
 
@@ -1191,7 +1169,7 @@ mnuConfig_Analyzer_TempUnit(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_TEMPUNIT;
 
 	static char buf[MAX_LCD_WIDTH];
-    (REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%15cC", LCD_DEGREE) : sprintf(buf,"%15cF", LCD_DEGREE);
+    (REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%*cC",15, LCD_DEGREE) : sprintf(buf,"%*cF",15, LCD_DEGREE);
 	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
 
 	if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_TEMPUNIT, lcdLine1);
@@ -1212,11 +1190,9 @@ fxnConfig_Analyzer_TempUnit(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_CFG_ANALYZER_TEMPUNIT;
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_ANALYZER_TEMPUNIT, MNU_CFG_ANALYZER_TEMPUNIT); }
-	static char buf[MAX_LCD_WIDTH];
 
 	static BOOL isCelsius = TRUE;
-   	(isCelsius) ? sprintf(buf,"%15cC", LCD_DEGREE) : sprintf(buf,"%15cF", LCD_DEGREE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+   	(isCelsius) ? sprintf(lcdLine1,"%*cC",15, LCD_DEGREE) : sprintf(lcdLine1,"%*cF",15, LCD_DEGREE);
 	blinkLcdLine1(lcdLine1, BLANK);
 
 	switch (input)	
@@ -1244,10 +1220,8 @@ Uint16
 mnuConfig_Analyzer_TempAdj(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_TEMPADJ;
-	static char buf[MAX_LCD_WIDTH];
 
-	(REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%14.1f%cC", REG_TEMP_ADJUST.val, LCD_DEGREE) : sprintf(buf,"%14.1f%cF", REG_TEMP_ADJUST.val, LCD_DEGREE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	(REG_TEMPERATURE.unit == u_temp_C) ? sprintf(lcdLine1,"%*.1f%cC",14, REG_TEMP_ADJUST.val, LCD_DEGREE) : sprintf(lcdLine1,"%*.1f%cF",14, REG_TEMP_ADJUST.val, LCD_DEGREE);
 
 	if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_TEMPADJ, lcdLine1);
 
@@ -1361,10 +1335,8 @@ Uint16
 mnuConfig_Analyzer_OilIndex(const Uint16 input)
 {
     if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_OILINDEX;
-	static char buf[MAX_LCD_WIDTH];
 
-    sprintf(buf, "%12.3f Mhz", Round_N(REG_OIL_INDEX.calc_val,3));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1,"%*.3fMhz",13, Round_N(REG_OIL_INDEX.calc_val,3));
 
     if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_OILINDEX, lcdLine1);
 
@@ -1398,15 +1370,13 @@ fxnConfig_Analyzer_OilIndex(const Uint16 input)
 }
 
 
-// MENU 2.1.9
+// MENU 2.1.7
 Uint16
 mnuConfig_Analyzer_OilFreqLow(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_OILFREQLOW;
 
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, "%12.3f Mhz", Round_N(REG_OIL_FREQ_LOW.calc_val,3));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1,"%*.3fMhz",13,Round_N(REG_OIL_FREQ_LOW.calc_val,3));
 
     if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_OILFREQLOW, lcdLine1);
 	
@@ -1420,7 +1390,7 @@ mnuConfig_Analyzer_OilFreqLow(const Uint16 input)
 }
 
 
-// FXN 2.1.9
+// FXN 2.1.7
 Uint16
 fxnConfig_Analyzer_OilFreqLow(const Uint16 input)
 {
@@ -1440,15 +1410,13 @@ fxnConfig_Analyzer_OilFreqLow(const Uint16 input)
 }
 
 
-// MENU 2.1.10
+// MENU 2.1.8
 Uint16
 mnuConfig_Analyzer_OilFreqHi(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_OILFREQHI;
 
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%12.3f Mhz", Round_N(REG_OIL_FREQ_HIGH.calc_val,3));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*.3fMhz",13,Round_N(REG_OIL_FREQ_HIGH.calc_val,3));
 
     if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_OILFREQHI, lcdLine1);
 	
@@ -1462,7 +1430,7 @@ mnuConfig_Analyzer_OilFreqHi(const Uint16 input)
 }
 
 
-// FXN 2.1.10
+// FXN 2.1.8
 Uint16
 fxnConfig_Analyzer_OilFreqHi(const Uint16 input)
 {
@@ -1482,7 +1450,7 @@ fxnConfig_Analyzer_OilFreqHi(const Uint16 input)
 }
 
 
-// MENU 2.1.11
+// MENU 2.1.9
 Uint16
 mnuConfig_Analyzer_PhaseHold(const Uint16 input)
 {
@@ -1500,7 +1468,7 @@ mnuConfig_Analyzer_PhaseHold(const Uint16 input)
 }
 
 
-// FXN 2.1.11
+// FXN 2.1.9
 Uint16
 fxnConfig_Analyzer_PhaseHold(const Uint16 input)
 {
@@ -1525,9 +1493,8 @@ Uint16
 mnuConfig_AvgTemp(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AVGTEMP;
-	static char buf[MAX_LCD_WIDTH];
-	(REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%14.1f%cC", REG_TEMP_AVG.val, LCD_DEGREE) : sprintf(buf,"%14.1f%cF", REG_TEMP_AVG.val, LCD_DEGREE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	(REG_TEMPERATURE.unit == u_temp_C) ? sprintf(lcdLine1,"%*.1f%cC",14, REG_TEMP_AVG.val, LCD_DEGREE) : sprintf(lcdLine1,"%*.1f%cF",14, REG_TEMP_AVG.val, LCD_DEGREE);
 	(isUpdateDisplay) ? updateDisplay(CFG_AVGTEMP, lcdLine1) : displayLcd(lcdLine1,LCD1);
 
 	switch (input)	
@@ -1742,9 +1709,8 @@ Uint16
 mnuConfig_DataLogger_Period(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DATALOGGER_PERIOD;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%11d Secs", REG_LOGGING_PERIOD);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1, "%*d Secs",11, REG_LOGGING_PERIOD);
 	if (isUpdateDisplay) updateDisplay(CFG_DATALOGGER_PERIOD, lcdLine1);
 
 	switch (input)	
@@ -1780,9 +1746,9 @@ Uint16
 mnuConfig_AnalogOutput(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%13.2f mA", Round_N(REG_AO_OUTPUT,1));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1, "%*.2fmA",14, Round_N(REG_AO_OUTPUT,1));
+
 	if (isUpdateDisplay) updateDisplay(CFG_AO, lcdLine1); 
 	displayLcd(lcdLine1,LCD1);
 
@@ -1800,9 +1766,9 @@ Uint16
 mnuConfig_AO_LRV(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO_LRV;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%15.2f%%", REG_AO_LRV.calc_val);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1, "%*.2f%%",15, REG_AO_LRV.calc_val);
+
 	if (isUpdateDisplay) updateDisplay(CFG_AO_LRV, lcdLine1);
 	
 	switch (input)	
@@ -1838,9 +1804,8 @@ Uint16
 mnuConfig_AO_URV(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO_URV;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%15.2f%%", REG_AO_URV.calc_val);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1, "%*.2f%%",15, REG_AO_URV.calc_val);
 	if (isUpdateDisplay) updateDisplay(CFG_AO_URV, lcdLine1);
 	
 	switch (input)	
@@ -1876,9 +1841,8 @@ Uint16
 mnuConfig_AO_Dampening(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO_DAMPENING;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, "%11d Secs", REG_AO_DAMPEN);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    sprintf(lcdLine1, "%*dSecs",12, REG_AO_DAMPEN);
 	if (isUpdateDisplay) updateDisplay(CFG_AO_DAMPENING, lcdLine1);
 
 	switch (input)	
@@ -1914,9 +1878,8 @@ Uint16
 mnuConfig_AO_Alarm(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO_ALARM;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, errorMode[REG_AO_ALARM_MODE]);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    sprintf(lcdLine1,"%*s",16,errorMode[REG_AO_ALARM_MODE]);
     (isUpdateDisplay) ? updateDisplay(CFG_AO_ALARM, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -1966,7 +1929,6 @@ mnuConfig_AO_TrimLo(const Uint16 input)
     static double manualValLoPrev = 0;      // holds current manual output value
 	static Uint8 aoModeLoPrev 	= 0;        // holds current MANUAL mode status
 	static BOOL isSaveValue 		= TRUE;
-	static char buf[MAX_LCD_WIDTH];
     COIL_AO_TRIM_MODE.val = FALSE;
 
     // SAVE CURRENT AO SETTINGS
@@ -1979,8 +1941,7 @@ mnuConfig_AO_TrimLo(const Uint16 input)
 
     if (isUpdateDisplay)
     {
-  	    sprintf (buf, "%14.3fmA", REG_AO_TRIMLO);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+  	    sprintf (lcdLine1, "%*.3fmA",14, REG_AO_TRIMLO);
         updateDisplay(CFG_AO_TRIMLO, lcdLine1);
     }
 
@@ -2050,7 +2011,6 @@ Uint16
 mnuConfig_AO_TrimHi(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO_TRIMHI;
-	static char buf[MAX_LCD_WIDTH];
 
     static double manualValHiPrev = 0;    // holds current manual output value
 	static Uint8 aoModeHiPrev 	= 0;    // holds current MANUAL mode status
@@ -2067,8 +2027,7 @@ mnuConfig_AO_TrimHi(const Uint16 input)
 
     if (isUpdateDisplay)
     {
-	    sprintf (buf, "%14.3fmA", REG_AO_TRIMHI);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	    sprintf (lcdLine1,"%*.3fmA",14,REG_AO_TRIMHI);
         updateDisplay(CFG_AO_TRIMHI, lcdLine1);
     }
 
@@ -2162,12 +2121,10 @@ fxnConfig_AO_Mode(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return FXN_CFG_AO_MODE;
 
 	static Uint8 index;
-	static char buf[MAX_LCD_WIDTH];
 
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_AO_MODE, MNU_CFG_AO_MODE); }
 
-    sprintf(buf, aoMode[index]); 
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1,"%*s",16,aoMode[index]); 
     blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2190,9 +2147,7 @@ Uint16
 mnuConfig_AO_AoValue(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_AO_AOVALUE;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, "%13.2f mA", REG_AO_MANUAL_VAL);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1, "%*.2fmA",14, REG_AO_MANUAL_VAL);
 
     (isUpdateDisplay) ? updateDisplay(CFG_AO_AOVALUE, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
@@ -2248,9 +2203,8 @@ Uint16
 mnuConfig_Comm_SlaveAddr(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_COMM_SLAVEADDR;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, "%16d", REG_SLAVE_ADDRESS);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    sprintf(lcdLine1, "%*d",16, REG_SLAVE_ADDRESS);
     (isUpdateDisplay) ? updateDisplay(CFG_COMM_SLAVEADDR, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -2288,9 +2242,8 @@ Uint16
 mnuConfig_Comm_BaudRate(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_COMM_BAUDRATE;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%12d BPS", (Uint32)REG_BAUD_RATE.calc_val);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*dBPS",13,(Uint32)REG_BAUD_RATE.calc_val);
 
 	if (isUpdateDisplay) updateDisplay(CFG_COMM_BAUDRATE, lcdLine1);
 
@@ -2309,12 +2262,13 @@ Uint16
 fxnConfig_Comm_BaudRate(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_CFG_COMM_BAUDRATE;
+
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_COMM_BAUDRATE, MNU_CFG_COMM_BAUDRATE); }
-	static char buf[MAX_LCD_WIDTH];
+
 	static Uint8 index;
 	const double baudrate[7] = {2400.0, 4800.0, 9600.0, 19200.0, 38400.0, 57600.0, 115200.0};
-	sprintf(buf, "%16.0f", baudrate[index]);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*.0f",16, baudrate[index]);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2382,21 +2336,19 @@ Uint16
 mnuConfig_Comm_Statistics(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_COMM_STATISTICS;
-	static char buf[MAX_LCD_WIDTH];
 
-         if (REG_STATISTICS == 0) sprintf(buf, "Success:%8d",STAT_SUCCESS);
-    else if (REG_STATISTICS == 1) sprintf(buf, "Inv Pkt:%8d",STAT_PKT);
-    else if (REG_STATISTICS == 2) sprintf(buf, "Inv Cmd:%8d",STAT_CMD);
-    else if (REG_STATISTICS == 3) sprintf(buf, "Retry:%10d",STAT_RETRY);
+         if (REG_STATISTICS == 0) sprintf(lcdLine1, "Success:%*d",8,STAT_SUCCESS);
+    else if (REG_STATISTICS == 1) sprintf(lcdLine1, "Inv Pkt:%*d",8,STAT_PKT);
+    else if (REG_STATISTICS == 2) sprintf(lcdLine1, "Inv Cmd:%*d",8,STAT_CMD);
+    else if (REG_STATISTICS == 3) sprintf(lcdLine1, "Retry:%*d",10,STAT_RETRY);
     else
     {
-	         if (STAT_CURRENT == 0) sprintf(buf, "Success:%8d",STAT_SUCCESS);
-	    else if (STAT_CURRENT == 1) sprintf(buf, "Inv Pkt:%8d",STAT_PKT);
-	    else if (STAT_CURRENT == 2) sprintf(buf, "Inv Cmd:%8d",STAT_CMD);
-	    else sprintf(buf, "Retry:%10d",STAT_RETRY);
+	         if (STAT_CURRENT == 0) sprintf(lcdLine1, "Success:%*d",8,STAT_SUCCESS);
+	    else if (STAT_CURRENT == 1) sprintf(lcdLine1, "Inv Pkt:%*d",8,STAT_PKT);
+	    else if (STAT_CURRENT == 2) sprintf(lcdLine1, "Inv Cmd:%*d",8,STAT_CMD);
+	    else sprintf(lcdLine1, "Retry:%*d",10,STAT_RETRY);
     }
 
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
     if (isUpdateDisplay) updateDisplay(CFG_COMM_STATISTICS, lcdLine1); 
     else displayLcd(lcdLine1,LCD1);
 
@@ -2420,10 +2372,8 @@ fxnConfig_Comm_Statistics(const Uint16 input)
 
 	static Uint8 index;
 	const char * statMode[5] = {ST_SUCCESS, ST_PKT, ST_CMD, ST_RETRY, AUTOMATIC}; 
-	static char buf[MAX_LCD_WIDTH];
 
-	sprintf(buf, statMode[index]); 
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*s",16,statMode[index]); 
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2447,9 +2397,8 @@ Uint16
 mnuConfig_Relay(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_RELAY;
-	static char buf[MAX_LCD_WIDTH];
-    (COIL_RELAY[0].val) ? sprintf(buf, RELAY_ON) : sprintf(buf, RELAY_OFF);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    (COIL_RELAY[0].val) ? sprintf(lcdLine1,"%*s",16,RELAY_ON) : sprintf(lcdLine1,"%*s",16,RELAY_OFF);
     (isUpdateDisplay) ? updateDisplay(CFG_RELAY, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -2468,9 +2417,7 @@ mnuConfig_Relay_Delay(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_RELAY_DELAY;
 
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, "%11d Secs", REG_RELAY_DELAY);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1, "%*dSecs",12, REG_RELAY_DELAY);
 
     (isUpdateDisplay) ? updateDisplay(CFG_RELAY_DELAY, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
@@ -2653,9 +2600,8 @@ Uint16
 mnuConfig_Relay_SetPoint(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_RELAY_SETPOINT;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf, "%15.1f%%", Round_N(REG_RELAY_SETPOINT.calc_val,1));
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    sprintf(lcdLine1, "%*.1f%%",15, Round_N(REG_RELAY_SETPOINT.calc_val,1));
 
     (isUpdateDisplay) ? updateDisplay(CFG_RELAY_SETPOINT,lcdLine1) : displayLcd(lcdLine1, LCD1);
 
@@ -2776,7 +2722,6 @@ mnuConfig_DnsCorr_DispUnit(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_DISPUNIT;
 
 	static Uint8 index;
-	static char buf[MAX_LCD_WIDTH];
 
     if (isUpdateDisplay)
     {
@@ -2785,8 +2730,7 @@ mnuConfig_DnsCorr_DispUnit(const Uint16 input)
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
 
-		sprintf(buf,"%*s",16,densityIndex[index]);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
@@ -2808,7 +2752,6 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_DISPUNIT, MNU_CFG_DNSCORR_DISPUNIT); }
 
 	static Uint8 index;
-	static char buf[MAX_LCD_WIDTH];
 
     if (isUpdateDisplay)
     {
@@ -2817,13 +2760,11 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
 
-		sprintf(buf,"%*s",16,densityIndex[index]);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
-	sprintf(buf,"%*s",16,densityIndex[index]);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -3000,7 +2941,6 @@ mnuConfig_DnsCorr_InputUnit(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_INPUTUNIT;
 
 	static Uint8 index;
-	static char buf[MAX_LCD_WIDTH];
 
     if (isUpdateDisplay)
     {
@@ -3009,8 +2949,7 @@ mnuConfig_DnsCorr_InputUnit(const Uint16 input)
             if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
         }
 
-		sprintf(buf,"%*s",16,densityIndex[index]);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	    updateDisplay(CFG_DNSCORR_INPUTUNIT, lcdLine1);
     }
 
@@ -3039,7 +2978,6 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
 	double tempUrvVal = 0;
 
 	static Uint8 index;
-	static char buf[MAX_LCD_WIDTH];
 
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_INPUTUNIT, MNU_CFG_DNSCORR_INPUTUNIT); }
 
@@ -3050,13 +2988,11 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
             if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
         }
 
-		sprintf(buf,"%*s",16,densityIndex[index]);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	    updateDisplay(CFG_DNSCORR_INPUTUNIT, lcdLine1);
     }
 
-	sprintf(buf,"%*s",16,densityIndex[index]);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -3124,9 +3060,8 @@ Uint16
 mnuConfig_DnsCorr_AiLrv(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_AILRV;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf,"%16.2f", REG_OIL_DENSITY_AI_LRV.calc_val);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*.2f",16,REG_OIL_DENSITY_AI_LRV.calc_val);
     if (isUpdateDisplay) updateDisplay(CFG_DNSCORR_AILRV, lcdLine1);
 
     displayLcd(lcdLine1, LCD1);
@@ -3166,9 +3101,7 @@ Uint16
 mnuConfig_DnsCorr_AiUrv(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_AIURV;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf,"%16.2f", REG_OIL_DENSITY_AI_URV.calc_val);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);	
+	sprintf(lcdLine1,"%*.2f",16, REG_OIL_DENSITY_AI_URV.calc_val);
     if (isUpdateDisplay) updateDisplay(CFG_DNSCORR_AIURV, lcdLine1);
 
 	switch (input)	
@@ -3206,10 +3139,9 @@ Uint16
 mnuConfig_DnsCorr_Ai_TrimLo(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_AI_TRIMLO;
-	static char buf[MAX_LCD_WIDTH];
+
     COIL_AI_TRIM_MODE.val = FALSE;
-    sprintf(buf, "%14.4fmA", REG_AI_TRIMMED);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1,"%*.4fmA",14,REG_AI_TRIMMED);
 
     (isUpdateDisplay) ? updateDisplay(CFG_DNSCORR_AI_TRIMLO,lcdLine1) : displayLcd(lcdLine1, LCD1);
 
@@ -3229,10 +3161,10 @@ Uint16
 fxnConfig_DnsCorr_Ai_TrimLo(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_CFG_DNSCORR_AI_TRIMLO;
+
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_AI_TRIMLO, MNU_CFG_DNSCORR_AI_TRIMLO); }
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%14.4fmA", REG_AI_MEASURE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*.4fmA",14, REG_AI_MEASURE);
 	(isUpdateDisplay) ? updateDisplay(CFG_MEASVAL, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -3255,10 +3187,10 @@ Uint16
 mnuConfig_DnsCorr_Ai_TrimHi(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_AI_TRIMHI;
-	static char buf[MAX_LCD_WIDTH];
+
     COIL_AI_TRIM_MODE.val = FALSE;
-    sprintf(buf, "%14.4fmA", REG_AI_TRIMMED);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    sprintf(lcdLine1,"%*.4fmA",14, REG_AI_TRIMMED);
     (isUpdateDisplay) ?  updateDisplay(CFG_DNSCORR_AI_TRIMHI,lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -3278,10 +3210,10 @@ Uint16
 fxnConfig_DnsCorr_Ai_TrimHi(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_CFG_DNSCORR_AI_TRIMHI;
+
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_AI_TRIMHI, MNU_CFG_DNSCORR_AI_TRIMHI); }
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%14.4fmA", REG_AI_MEASURE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*.4fmA",14,REG_AI_MEASURE);
 	(isUpdateDisplay) ? updateDisplay(CFG_MEASVAL, lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -3322,9 +3254,8 @@ Uint16
 fxnSecurityInfo_SN(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_SECURITYINFO_SN;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf,"%16u",(Uint16) REG_SN_PIPE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+    sprintf(lcdLine1,"%*u",16,(Uint16) REG_SN_PIPE);
 	if (isUpdateDisplay) updateDisplay(SECURITYINFO_INFO_SN, lcdLine1);
 	
 	switch (input)	
@@ -3341,7 +3272,6 @@ Uint16
 fxnSecurityInfo_MC(const Uint16 input)
 {
     if (I2C_TXBUF.n > 0) return FXN_SECURITYINFO_MC;
-	static char buf[MAX_LCD_WIDTH];
 
 	if (isUpdateDisplay)
 	{
@@ -3356,8 +3286,7 @@ fxnSecurityInfo_MC(const Uint16 input)
             lcdModelCode[i*4+0] = (REG_MODEL_CODE[i] >> 0)  & 0xFF;
         }
        
-        sprintf(buf,"%16s",lcdModelCode);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+        sprintf(lcdLine1,"%*s",16,lcdModelCode);
         updateDisplay(SECURITYINFO_INFO_MC, lcdLine1);
 	}
 	
@@ -3374,9 +3303,8 @@ Uint16
 fxnSecurityInfo_FW(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_SECURITYINFO_FW;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%16s", FIRMWARE_VERSION);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*s",16,FIRMWARE_VERSION);
 	if (isUpdateDisplay) updateDisplay(SECURITYINFO_INFO_FW, lcdLine1);
 
     switch (input)	
@@ -3392,9 +3320,8 @@ Uint16
 fxnSecurityInfo_HW(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_SECURITYINFO_HW;
-	static char buf[MAX_LCD_WIDTH];
-	sprintf(buf, "%16s", HARDWARE_VERSION);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*s",16,HARDWARE_VERSION);
 	if (isUpdateDisplay) updateDisplay(SECURITYINFO_INFO_HW, lcdLine1);
 
     switch (input)	
@@ -3411,9 +3338,7 @@ Uint16
 mnuSecurityInfo_TimeAndDate(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_SECURITYINFO_TIMEANDDATE;
-	static char buf[MAX_LCD_WIDTH];
-    sprintf(buf,"%02d:%02d %02d/%02d/20%02d",REG_RTC_HR,REG_RTC_MIN,REG_RTC_MON,REG_RTC_DAY,REG_RTC_YR);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    sprintf(lcdLine1,"%02u:%02u %02u/%02u/20%02u",REG_RTC_HR,REG_RTC_MIN,REG_RTC_MON,REG_RTC_DAY,REG_RTC_YR);
 
     (isUpdateDisplay) ? updateDisplay(SECURITYINFO_TIMEANDDATE,lcdLine1) : displayLcd(lcdLine1, LCD1);
 
@@ -3433,7 +3358,6 @@ fxnSecurityInfo_TimeAndDate(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_SECURITYINFO_TIMEANDDATE;
     if (isMessage) { return notifyMessageAndExit(FXN_SECURITYINFO_TIMEANDDATE, MNU_SECURITYINFO_TIMEANDDATE); }
-	static char buf[MAX_LCD_WIDTH];
 
     char hh[2], mn[2], mm[2], dd[2], yy[2];
 
@@ -3441,8 +3365,7 @@ fxnSecurityInfo_TimeAndDate(const Uint16 input)
     {
 		isUpdateDisplay = FALSE;
 		displayLcd(SECURITYINFO_TIMEANDDATE,LCD0);
-        sprintf(buf,"%02d:%02d %02d/%02d/20%02d",REG_RTC_HR,REG_RTC_MIN,REG_RTC_MON,REG_RTC_DAY,REG_RTC_YR);
-		memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+        sprintf(lcdLine1,"%02u:%02u %02u/%02u/20%02u",REG_RTC_HR,REG_RTC_MIN,REG_RTC_MON,REG_RTC_DAY,REG_RTC_YR);
 		displayLcd(lcdLine1,LCD1);
         MENU.col = 0; 
         MENU.row = 1; 
@@ -3605,8 +3528,6 @@ mnuSecurityInfo_Diagnostics(const Uint16 input)
 	static Uint8 errors[MAX_ERRORS];
 	static Uint8 errorCount = 0;
 	static int DIAGNOSTICS_PREV = -1;
-	static char buf0[MAX_LCD_WIDTH];
-	static char buf1[MAX_LCD_WIDTH];
 
     if (isUpdateDisplay || (DIAGNOSTICS != DIAGNOSTICS_PREV))
 	{
@@ -3615,17 +3536,14 @@ mnuSecurityInfo_Diagnostics(const Uint16 input)
 		if (errorCount > 0)
 		{
 			index = errors[i];	// Get error index
-			sprintf(buf0,"3.4 Diagnos: %d", errorCount);
-			memcpy(lcdLine0,buf0,MAX_LCD_WIDTH);
-			sprintf(buf1,"%16s",errorType[index]);
-			memcpy(lcdLine1,buf1,MAX_LCD_WIDTH);
+			sprintf(lcdLine0,"3.4 Diagnos: %*d",3,errorCount);
+			sprintf(lcdLine1,"%*s",16,errorType[index]);
 			updateDisplay(lcdLine0,lcdLine1);
 		}
 		else
 		{
 			errorCount = 0;
-			sprintf(buf0,"3.4 Diagnos: %d", errorCount);
-			memcpy(lcdLine0,buf0,MAX_LCD_WIDTH);
+			sprintf(lcdLine0,"3.4 Diagnos: %*d",3,errorCount);
 			updateDisplay(lcdLine0,BLANK);
 		}
 	}
@@ -3653,10 +3571,8 @@ fxnSecurityInfo_Diagnostics(const Uint16 input)
 	static Uint8 errorCount = 0;			// Total error count
 	static Uint8 errors[MAX_ERRORS];		// Error container
 	static int DIAGNOSTICS_PREV = -1;		// Error count update trigger
-	static char buf0[MAX_LCD_WIDTH];
     if (DIAGNOSTICS != DIAGNOSTICS_PREV) diagnose(&i, &index, &errorCount, errors, &DIAGNOSTICS_PREV);
-	sprintf(buf0,"3.4 Diagnos: %d", errorCount); // always errors[errorCount] + 1 to be human readable
-	memcpy(lcdLine0,buf0,MAX_LCD_WIDTH);
+	sprintf(lcdLine0,"3.4 Diagnos: %*d",3,errorCount);
 	displayLcd(lcdLine0,LCD0);
 	index = errors[i];	// Get error index
 	displayLcd(errorType[index],LCD1);
