@@ -364,16 +364,12 @@ onNextMessagePressed(const int nextId, const char * message)
 void
 displayMnu(const char * mnu, const double fvalue, const int fdigit)
 {
-	static char buf[20];
-
-         if (fdigit == 0) sprintf(buf,"%16.0f", fvalue); // 0 (integer)
-    else if (fdigit == 1) sprintf(buf,"%16.1f", fvalue); // 0.0
-    else if (fdigit == 2) sprintf(buf,"%16.2f", fvalue); // 0.00
-    else if (fdigit == 3) sprintf(buf,"%16.3f", fvalue); // 0.000
-    else if (fdigit == 4) sprintf(buf,"%16.4f", fvalue); // 0.0000
-    else if (fdigit == 5) sprintf(buf,"%16.5f", fvalue); // 0.00000
-
-	strncpy(lcdLine1,buf,MAX_LCD_WIDTH);
+         if (fdigit == 0) sprintf(lcdLine1,"%*.0f",16,fvalue); // 0 (integer)
+    else if (fdigit == 1) sprintf(lcdLine1,"%*.1f",16,fvalue); // 0.0
+    else if (fdigit == 2) sprintf(lcdLine1,"%*.2f",16,fvalue); // 0.00
+    else if (fdigit == 3) sprintf(lcdLine1,"%*.3f",16,fvalue); // 0.000
+    else if (fdigit == 4) sprintf(lcdLine1,"%*.4f",16,fvalue); // 0.0000
+    else if (fdigit == 5) sprintf(lcdLine1,"%*.5f",16,fvalue); // 0.00000
 
     if (isUpdateDisplay) updateDisplay(mnu,lcdLine1);
     else displayLcd(lcdLine1, LCD1);
@@ -385,17 +381,13 @@ displayFxn(const char * fxn, const double fvalue, const int fdigit)
 {
     if (isUpdateDisplay)
     {    
-		static char buf[MAX_LCD_WIDTH];
 
-        // decide display format
-             if (fdigit == 0) sprintf(buf,"%16.0f", fvalue);   // 0 (integer)
-        else if (fdigit == 1) sprintf(buf,"%16.1f", fvalue);   // 0.0
-        else if (fdigit == 2) sprintf(buf,"%16.2f", fvalue);   // 0.00
-        else if (fdigit == 3) sprintf(buf,"%16.3f", fvalue);   // 0.000
-        else if (fdigit == 4) sprintf(buf,"%16.4f", fvalue);   // 0.0000
-        else if (fdigit == 5) sprintf(buf,"%16.5f", fvalue);   // 0.00000
-
-		strncpy(lcdLine1,buf,MAX_LCD_WIDTH);
+         if (fdigit == 0) sprintf(lcdLine1,"%*.0f",16,fvalue); // 0 (integer)
+    else if (fdigit == 1) sprintf(lcdLine1,"%*.1f",16,fvalue); // 0.0
+    else if (fdigit == 2) sprintf(lcdLine1,"%*.2f",16,fvalue); // 0.00
+    else if (fdigit == 3) sprintf(lcdLine1,"%*.3f",16,fvalue); // 0.000
+    else if (fdigit == 4) sprintf(lcdLine1,"%*.4f",16,fvalue); // 0.0000
+    else if (fdigit == 5) sprintf(lcdLine1,"%*.5f",16,fvalue); // 0.00000
 
 		updateDisplay(fxn,lcdLine1);
         MENU.col = MAX_LCD_WIDTH-1;                                 // set cursor right alignment 
@@ -566,8 +558,6 @@ mnuHomescreenWaterCut(const Uint16 input)
 
     static Uint8 isDisplayLogo = 1;
 	static Uint8 disp_counter = 0;
-	static char buf1[MAX_LCD_WIDTH];
-	static char buf2[MAX_LCD_WIDTH];
 
     if (isDisplayLogo)
     {
@@ -576,14 +566,14 @@ mnuHomescreenWaterCut(const Uint16 input)
 
 		if (isInit)
 		{
-			isInit = FALSE;
-			sprintf(buf1, " Razor V%5s ", FIRMWARE_VERSION);
-			sprintf(buf2, "   SN: %06d", REG_SN_PIPE);
-			updateDisplay(PHASE_DYNAMICS,buf1);
+			isInit = 0;
+			sprintf(lcdLine1, " Razor V%*s ",7,FIRMWARE_VERSION);
+			updateDisplay(PHASE_DYNAMICS,lcdLine1);
 			isUpdateDisplay = 1;
+			sprintf(lcdLine1, "   SN: %0*d",6,REG_SN_PIPE);
 		}
 
-		if (isUpdateDisplay && (logoCounter > 10)) updateDisplay(PHASE_DYNAMICS,buf2); 
+		if (isUpdateDisplay && (logoCounter > 10)) updateDisplay(PHASE_DYNAMICS,lcdLine1); 
 	    logoCounter++;
 		
 		if (logoCounter>20) 
