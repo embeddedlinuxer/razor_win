@@ -1158,9 +1158,7 @@ mnuConfig_Analyzer_TempUnit(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_ANALYZER_TEMPUNIT;
 
-	static char buf[MAX_LCD_WIDTH];
-    (REG_TEMPERATURE.unit == u_temp_C) ? sprintf(buf,"%*cC",15, LCD_DEGREE) : sprintf(buf,"%*cF",15, LCD_DEGREE);
-	memcpy(lcdLine1,buf,MAX_LCD_WIDTH);
+    (REG_TEMPERATURE.unit == u_temp_C) ? sprintf(lcdLine1,"%*cC",15, LCD_DEGREE) : sprintf(lcdLine1,"%*cF",15, LCD_DEGREE);
 
 	if (isUpdateDisplay) updateDisplay(CFG_ANALYZER_TEMPUNIT, lcdLine1);
 
