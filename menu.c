@@ -702,6 +702,7 @@ mnuHomescreenDensity(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_DST;
 
 	static Uint8 index;
+	static Uint8 unitLength = 0;
 
     if (isUpdateDisplay) 
     {
@@ -713,9 +714,11 @@ mnuHomescreenDensity(const Uint16 input)
        	{
            	if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
        	}
+
+		unitLength = strlen(densityIndex[index]);
     }
 
-	sprintf(lcdLine1,"%*.2f%s",16-strlen(densityIndex[index]),REG_OIL_DENSITY.val,densityIndex[index]);
+	sprintf(lcdLine1,"%*.2f%s",16-unitLength,REG_OIL_DENSITY.val,densityIndex[index]);
 	(isUpdateDisplay) ? updateDisplay(DENSITY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
 	 switch (input)  {

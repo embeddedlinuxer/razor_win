@@ -1251,7 +1251,7 @@ void I2C_ADC_Read_Temp_Callback(void)
 
 		/* i2c noise filtering */
 		(temp_prev != temp_dbl) ? (tryAgain++) : (tryAgain = 0);
-		if ((tryAgain > 2) || (temp_prev == 0))
+		if ((tryAgain > 5) || (temp_prev == 0))
 		{
 			VAR_Update(&REG_TEMPERATURE,temp_dbl,0);
 			temp_prev = temp_dbl;
