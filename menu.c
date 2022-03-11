@@ -75,9 +75,12 @@ static const char * relayMode[4]     = {WATERCUT, PHASE, ERROR, MANUAL};
 static const char * aoMode[3] 		 = {AUTOMATIC, AUTO_REVERSE, MANUAL}; 
 static const char * errorMode[3] 	 = {DISABLE, AO_ALARM_HIGH, AO_ALARM_LOW}; 
 static const char * densityMode[4] 	 = {DISABLE, ANALOG_INPUT, MODBUS, MANUAL};
-static const char * densityIndex[8]  = {KG_M3, KG_M3_15C, API, API_60F, LBS_FT3, LBS_FT3_60F, SG, SG_15C}; 
-static const Uint8 densityUnit[8] 	 = {u_mpv_kg_cm, u_mpv_kg_cm_15C, u_mpv_deg_API, u_mpv_deg_API_60F, u_mpv_lbs_cf, u_mpv_lbs_cf_60F, u_mpv_sg, u_mpv_sg_15C};
-static const char * USB_CODE[18] 	 = {DISABLED,ENABLED,USB_ERROR2,USB_ERROR3,USB_ERROR4,USB_ERROR5,USB_ERROR6,USB_ERROR7,USB_ERROR8,USB_ERROR9,USB_ERROR10,USB_ERROR11,USB_ERROR12,USB_ERROR13,USB_ERROR14,USB_ERROR15,USB_ERROR16,USB_ERROR17};
+static const char * densityUnit[8]   = {KG_M3, KG_M3_15C, API, API_60F, LBS_FT3, LBS_FT3_60F, SG, SG_15C}; 
+static const Uint8 densityIndex[8] 	 = {u_mpv_kg_cm, u_mpv_kg_cm_15C, u_mpv_deg_API, u_mpv_deg_API_60F, 
+										u_mpv_lbs_cf, u_mpv_lbs_cf_60F, u_mpv_sg, u_mpv_sg_15C};
+static const char * USB_CODE[18] 	 = {DISABLED,ENABLED,USB_ERROR2,USB_ERROR3,USB_ERROR4,USB_ERROR5,
+										USB_ERROR6,USB_ERROR7,USB_ERROR8,USB_ERROR9,USB_ERROR10,USB_ERROR11,
+										USB_ERROR12,USB_ERROR13,USB_ERROR14,USB_ERROR15,USB_ERROR16,USB_ERROR17};
 
 //////////////////////////////////////////////////////////////
 /// function definitions
@@ -613,10 +616,8 @@ mnuHomescreenFrequency(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_FREQ;
 
-	/* update frequency */	
 	sprintf(lcdLine1,"%*.3fMhz",13,Round_N(REG_FREQ.calc_val,3));
 
-	/* update display */
 	(isUpdateDisplay) ? updateDisplay(FREQUENCY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
 	switch (input)  {
@@ -632,10 +633,8 @@ mnuHomescreenReflectedPower(const Uint16 input)
 {	
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_RP;
 
-	/* update refelected power */	
 	sprintf(lcdLine1,"%*.3fV",15,Round_N(REG_OIL_RP,3));
 
-	/* update display */
 	(isUpdateDisplay) ? updateDisplay(REFLECTEDPOWER, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
 	switch (input)  {
@@ -651,10 +650,8 @@ mnuHomescreenPhaseThreshold(const Uint16 input)
 {	
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_PT;
 
-	/* update phase threshold */
 	sprintf(lcdLine1,"%*.3fV",15,Round_N(REG_OIL_PT,3));
 
-	/* update display */
 	(isUpdateDisplay) ? updateDisplay(PHASETHRESHOLD, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
 	switch (input)  {
@@ -706,19 +703,15 @@ mnuHomescreenDensity(const Uint16 input)
 
     if (isUpdateDisplay) 
     {
-        	 if (REG_OIL_DENS_CORR_MODE == 1) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_AI, CALC_UNIT);
-        else if (REG_OIL_DENS_CORR_MODE == 2) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MODBUS, CALC_UNIT);
-        else if (REG_OIL_DENS_CORR_MODE == 3) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MANUAL, CALC_UNIT);
-
        	for (index = 0; index<8; index++)
        	{
-           	if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
+           	if (REG_OIL_DENSITY.unit == densityIndex[index]) break;
        	}
 
-		unitLength = strlen(densityIndex[index]);
+		unitLength = strlen(densityUnit[index]);
     }
 
-	sprintf(lcdLine1,"%*.2f%s",16-unitLength,REG_OIL_DENSITY.val,densityIndex[index]);
+	sprintf(lcdLine1,"%*.2f%s",16-unitLength,REG_OIL_DENSITY.val,densityUnit[index]);
 	(isUpdateDisplay) ? updateDisplay(DENSITY, lcdLine1) : (isUpdateDisplay = ~isUpdateDisplay);
 
 	 switch (input)  {
@@ -736,11 +729,12 @@ mnuHomescreenDiagnostics(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_HOMESCREEN_DGN;
 	static Uint8 i = 0;	
 	static Uint8 index = 0;
+	static Uint8 counter = 0;
 	static Uint8 errors[MAX_ERRORS];
 	static Uint8 errorCount = 0;
 	static int DIAGNOSTICS_PREV = -1;
 
-	if (isUpdateDisplay || (DIAGNOSTICS != DIAGNOSTICS_PREV))
+	if (isUpdateDisplay)
 	{
 		diagnose(&i, &index, &errorCount, errors, &DIAGNOSTICS_PREV);
 
@@ -758,6 +752,29 @@ mnuHomescreenDiagnostics(const Uint16 input)
 			updateDisplay(lcdLine0,BLANK);
 		}
 	} 
+
+	if (counter > 10)
+	{
+		if (DIAGNOSTICS != DIAGNOSTICS_PREV)
+		{
+			diagnose(&i, &index, &errorCount, errors, &DIAGNOSTICS_PREV);
+
+			if (errorCount > 0)
+			{
+				index = errors[i];	// Get error index
+				sprintf(lcdLine0,"Diagnostics: %*d",3, errorCount);
+				sprintf(lcdLine1,"%*s",16,errorType[index]);
+				updateDisplay(lcdLine0,lcdLine1);
+			}
+			else
+			{
+				errorCount = 0;
+				sprintf(lcdLine0,"Diagnostics: %*d",3, errorCount);
+				updateDisplay(lcdLine0,BLANK);
+			}
+		}
+	}
+	else counter++;
 
  	switch (input)  {
        case BTN_VALUE  : return onNextPressed(MNU_HOMESCREEN_SRN);
@@ -2631,15 +2648,10 @@ Uint16
 mnuConfig_DnsCorr(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR;
-	memcpy(lcdLine1,densityMode[REG_OIL_DENS_CORR_MODE],MAX_LCD_WIDTH);
-	if (isUpdateDisplay) 
-    {
-        if (REG_OIL_DENS_CORR_MODE == 1) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_AI, CALC_UNIT);
-        else if (REG_OIL_DENS_CORR_MODE == 2) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MODBUS, CALC_UNIT);
-		else if (REG_OIL_DENS_CORR_MODE == 3) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MANUAL, CALC_UNIT);
-		
-        updateDisplay(CFG_DNSCORR, lcdLine1); 
-    }
+
+	sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityMode[REG_OIL_DENS_CORR_MODE]);
+
+	if (isUpdateDisplay) updateDisplay(CFG_DNSCORR, lcdLine1);
 	else displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -2658,17 +2670,9 @@ mnuConfig_DnsCorr_CorrEnable(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_CORRENABLE;
 
-	memcpy(lcdLine1,densityMode[REG_OIL_DENS_CORR_MODE],MAX_LCD_WIDTH);
+	sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityMode[REG_OIL_DENS_CORR_MODE]);
 
-	if (isUpdateDisplay)
-	{
-		if (REG_OIL_DENS_CORR_MODE == 1) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_AI, CALC_UNIT);
-		else if (REG_OIL_DENS_CORR_MODE == 2) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MODBUS, CALC_UNIT);
-		else if (REG_OIL_DENS_CORR_MODE == 3) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MANUAL, CALC_UNIT);
-		else DIAGNOSTICS &= ~(ERR_DNS_LO | ERR_DNS_HI);
-
-		updateDisplay(CFG_DNSCORR_CORRENABLE, lcdLine1);
-	}
+	if (isUpdateDisplay) updateDisplay(CFG_DNSCORR_CORRENABLE, lcdLine1);
 	else displayLcd(lcdLine1, LCD1);
 
 	switch (input)
@@ -2686,9 +2690,13 @@ Uint16
 fxnConfig_DnsCorr_CorrEnable(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return FXN_CFG_DNSCORR_CORRENABLE;
+
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_DNSCORR_CORRENABLE, MNU_CFG_DNSCORR_CORRENABLE); }
+
 	static Uint8 index;
-	memcpy(lcdLine1,densityMode[index],MAX_LCD_WIDTH);
+
+	sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityMode[index]);
+
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2718,10 +2726,10 @@ mnuConfig_DnsCorr_DispUnit(const Uint16 input)
     {
         for (index = 0; index<8; index++)
         {
-            if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
+            if (REG_OIL_DENSITY.unit == densityIndex[index]) break;
         }
 
-		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
+		sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityUnit[index]);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
@@ -2748,14 +2756,14 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
     {
         for (index = 0; index<8; index++)
         {
-            if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
+            if (REG_OIL_DENSITY.unit == densityIndex[index]) break;
         }
 
-		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
+		sprintf(lcdLine1,"%*s",16,densityUnit[index]);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
-	sprintf(lcdLine1,"%*s",16,densityIndex[index]);
+	sprintf(lcdLine1,"%*s",16,densityUnit[index]);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2763,7 +2771,7 @@ fxnConfig_DnsCorr_DispUnit(const Uint16 input)
 			(index < 7) ? (index++) : (index = 0);
 			return FXN_CFG_DNSCORR_DISPUNIT;
         case BTN_ENTER  : 
-			REG_OIL_DENSITY.unit = densityUnit[index];
+			REG_OIL_DENSITY.unit = densityIndex[index];
 			VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY.calc_val, CALC_UNIT);
    	       	Swi_post(Swi_writeNand);
             return onNextMessagePressed(FXN_CFG_DNSCORR_DISPUNIT, CHANGE_SUCCESS);
@@ -2937,10 +2945,10 @@ mnuConfig_DnsCorr_InputUnit(const Uint16 input)
     {
         for (index = 0; index<8; index++)
         {
-            if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
+            if (REG_OIL_DENSITY.calc_unit == densityIndex[index]) break;
         }
 
-		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
+		sprintf(lcdLine1,"%*s",16,densityUnit[index]);
 	    updateDisplay(CFG_DNSCORR_INPUTUNIT, lcdLine1);
     }
 
@@ -2976,14 +2984,14 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
     {
         for (index = 0; index<8; index++)
         {
-            if (REG_OIL_DENSITY.calc_unit == densityUnit[index]) break;
+            if (REG_OIL_DENSITY.calc_unit == densityIndex[index]) break;
         }
 
-		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
+		sprintf(lcdLine1,"%*s",16,densityUnit[index]);
 	    updateDisplay(CFG_DNSCORR_INPUTUNIT, lcdLine1);
     }
 
-	sprintf(lcdLine1,"%*s",16,densityIndex[index]);
+	sprintf(lcdLine1,"%*s",16,densityUnit[index]);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2994,7 +3002,7 @@ fxnConfig_DnsCorr_InputUnit(const Uint16 input)
 			tempDensityVal = REG_OIL_DENSITY.calc_val;
 			tempLrvVal = REG_OIL_DENSITY_AI_LRV.calc_val;
 			tempUrvVal = REG_OIL_DENSITY_AI_URV.calc_val;
-			REG_OIL_DENSITY.calc_unit = densityUnit[index];
+			REG_OIL_DENSITY.calc_unit = densityIndex[index];
 			REG_OIL_DENSITY_AI_LRV.calc_unit = REG_OIL_DENSITY.calc_unit; 
 			REG_OIL_DENSITY_AI_URV.calc_unit = REG_OIL_DENSITY.calc_unit;
 			VAR_Update(&REG_OIL_DENSITY, tempDensityVal, CALC_UNIT);
@@ -3516,11 +3524,12 @@ mnuSecurityInfo_Diagnostics(const Uint16 input)
 	if (I2C_TXBUF.n > 0) return MNU_SECURITYINFO_DIAGNOSTICS;
 	static Uint8 i = 0;	
 	static Uint8 index = 0;
+	static Uint8 counter = 0;
 	static Uint8 errors[MAX_ERRORS];
 	static Uint8 errorCount = 0;
 	static int DIAGNOSTICS_PREV = -1;
 
-    if (isUpdateDisplay || (DIAGNOSTICS != DIAGNOSTICS_PREV))
+    if (isUpdateDisplay)
 	{
 		diagnose(&i, &index, &errorCount, errors, &DIAGNOSTICS_PREV);
 
@@ -3538,6 +3547,31 @@ mnuSecurityInfo_Diagnostics(const Uint16 input)
 			updateDisplay(lcdLine0,BLANK);
 		}
 	}
+
+	if (counter > 10)
+	{
+		counter = 0;
+
+		if (DIAGNOSTICS != DIAGNOSTICS_PREV)
+		{
+			diagnose(&i, &index, &errorCount, errors, &DIAGNOSTICS_PREV);
+
+			if (errorCount > 0)
+			{
+				index = errors[i];	// Get error index
+				sprintf(lcdLine0,"3.4 Diagnos: %*d",3,errorCount);
+				sprintf(lcdLine1,"%*s",16,errorType[index]);
+				updateDisplay(lcdLine0,lcdLine1);
+			}
+			else
+			{
+				errorCount = 0;
+				sprintf(lcdLine0,"3.4 Diagnos: %*d",3,errorCount);
+				updateDisplay(lcdLine0,BLANK);
+			}
+		}
+	}
+	else counter++;
 
 	switch (input)
 	{
