@@ -304,7 +304,7 @@ int
 onFxnBackPressed(const int currentId)
 {
     isMessage = TRUE;
-	memcpy(lcdLine1,CANCEL,MAX_LCD_WIDTH);
+	memcpy(lcdLine1,CANCEL,16);
     return currentId;
 }
 
@@ -341,7 +341,7 @@ int onMnuStepPressed(const int nextId, const int currentId, const char * label)
         if (!COIL_UNLOCKED.val)
         {   
             isMessage = TRUE;
-			memcpy(lcdLine1,LOCKED,MAX_LCD_WIDTH);
+			memcpy(lcdLine1,LOCKED,16);
         }
     }
 
@@ -356,7 +356,7 @@ onNextMessagePressed(const int nextId, const char * message)
     counter = 0;
     isUpdateDisplay = TRUE;
 	isMessage = TRUE;
-	memcpy(lcdLine1,message,MAX_LCD_WIDTH);
+	memcpy(lcdLine1,message,16);
     return nextId;
 }
 
@@ -390,7 +390,7 @@ displayFxn(const char * fxn, const double fvalue, const int fdigit)
     else if (fdigit == 5) sprintf(lcdLine1,"%*.5f",16,fvalue); // 0.00000
 
 		updateDisplay(fxn,lcdLine1);
-        MENU.col = MAX_LCD_WIDTH-1;                                 // set cursor right alignment 
+        MENU.col = 16-1;                                 // set cursor right alignment 
         MENU.row = 1;                                               // set line1 
         isUpdateDisplay = FALSE;                                    // disable init
     }    
@@ -404,7 +404,7 @@ int
 onFxnStepPressed(const int fxnId, const int fdigit)
 {
     MENU.col--;
-    if (MENU.col <= MAX_LCD_WIDTH-fdigit) MENU.col = MAX_LCD_WIDTH-1;   // -000.45'/0' = 8digits
+    if (MENU.col <= 16-fdigit) MENU.col = 16-1;   // -000.45'/0' = 8digits
     if (lcdLine1[MENU.col] == '.') MENU.col--;                          // do not alter '.'
     return fxnId;
 }
@@ -422,7 +422,7 @@ onFxnValuePressed(const int fxnId, const BOOL isSigned, const int fdigit)
         // SIGNED INTEGER
         if (fdigit == 0)
         {
-            if (MENU.col < MAX_LCD_WIDTH-1)
+            if (MENU.col < 16-1)
             {
                 if ((val > '9') || (val < '-')) val = '-';
                 else if ((val == '/') || (val == '.')) val = '0';   
@@ -432,8 +432,8 @@ onFxnValuePressed(const int fxnId, const BOOL isSigned, const int fdigit)
         // SIGNED FLOAT OR DOUBLE
         else
         {
-            if (MENU.col == MAX_LCD_WIDTH - (fdigit+1)) val = '.';
-            else if (MENU.col < MAX_LCD_WIDTH-(fdigit+2))
+            if (MENU.col == 16 - (fdigit+1)) val = '.';
+            else if (MENU.col < 16-(fdigit+2))
             {
                 if ((val > '9') || (val < '-')) val = '-';
                 else if ((val == '/') || (val == '.')) val = '0';   
@@ -452,7 +452,7 @@ onFxnValuePressed(const int fxnId, const BOOL isSigned, const int fdigit)
         // UNSIGNED FLOAT OR DOUBLE
         else
         {
-            if (MENU.col == MAX_LCD_WIDTH - (fdigit+1)) val = '.';
+            if (MENU.col == 16 - (fdigit+1)) val = '.';
             else if ((val > '9') || (val < '0')) val = '0';
         }
     }
@@ -465,14 +465,14 @@ onFxnValuePressed(const int fxnId, const BOOL isSigned, const int fdigit)
 int
 onFxnEnterPressed(const int currentId, const double max, const double min, VAR * vregister, double * dregister, int * iregister)
 {
-    char val[MAX_LCD_WIDTH] = {0};
+    char val[16] = {0};
 
     isUpdateDisplay = TRUE;
 	isMessage = TRUE;
 	int ivalue;
 	double dvalue;
 
-   	memcpy(val, lcdLine1, MAX_LCD_WIDTH);
+   	memcpy(val, lcdLine1, 16);
 
     ivalue = atoi(val);
     dvalue = atof(val);
@@ -482,7 +482,7 @@ onFxnEnterPressed(const int currentId, const double max, const double min, VAR *
     {
 		if ((*iregister == REG_PASSWORD) && (ivalue == 1343))
 		{
-			memcpy(lcdLine1,BAD_PASS,MAX_LCD_WIDTH);
+			memcpy(lcdLine1,BAD_PASS,16);
     		isUpdateDisplay = FALSE;
     		return currentId;
 		}
@@ -490,7 +490,7 @@ onFxnEnterPressed(const int currentId, const double max, const double min, VAR *
         {
             *iregister = ivalue;
    	        Swi_post(Swi_writeNand);
-			memcpy(lcdLine1,CHANGE_SUCCESS,MAX_LCD_WIDTH);
+			memcpy(lcdLine1,CHANGE_SUCCESS,16);
     		return currentId;
         }
     }
@@ -501,7 +501,7 @@ onFxnEnterPressed(const int currentId, const double max, const double min, VAR *
         {
             *dregister = dvalue;
    	        Swi_post(Swi_writeNand);
-			memcpy(lcdLine1,CHANGE_SUCCESS,MAX_LCD_WIDTH);
+			memcpy(lcdLine1,CHANGE_SUCCESS,16);
     		return currentId;
         }
     }
@@ -511,20 +511,20 @@ onFxnEnterPressed(const int currentId, const double max, const double min, VAR *
         {
             VAR_Update(vregister, dvalue, CALC_UNIT);
    	        Swi_post(Swi_writeNand);
-			memcpy(lcdLine1,CHANGE_SUCCESS,MAX_LCD_WIDTH);
+			memcpy(lcdLine1,CHANGE_SUCCESS,16);
     		return currentId;
         }
     }
 	else
 	{
 		Swi_post(Swi_writeNand);
-		(strcmp(val,CHANGE_SUCCESS) == 0) ? memcpy(lcdLine1,CHANGE_SUCCESS,MAX_LCD_WIDTH) : memcpy(lcdLine1,INVALID, MAX_LCD_WIDTH);
+		(strcmp(val,CHANGE_SUCCESS) == 0) ? memcpy(lcdLine1,CHANGE_SUCCESS,16) : memcpy(lcdLine1,INVALID, 16);
     	return currentId;
 	}
 
     // INVALID INPUT, STAY IN CURRENT FXN AND RETRY
     isUpdateDisplay = FALSE;
-	memcpy(lcdLine1,INVALID,MAX_LCD_WIDTH);
+	memcpy(lcdLine1,INVALID,16);
 
     return currentId;
 }
@@ -534,10 +534,10 @@ changeTime(void)
 {
 	int index = MENU.col;
 	index++;
-	if (index == MAX_LCD_WIDTH) index = 0;
+	if (index == 16) index = 0;
    	if ((index == 2) || (index == 5) || (index == 8) || (index == 11)) index++;
 	if ((index == 12) || (index == 13)) index = 14;
-	if (index >= MAX_LCD_WIDTH) index = 0;
+	if (index >= 16) index = 0;
 	MENU.col = index;
     LCD_printch(lcdLine1[MENU.col], MENU.col, MENU.row);
     LCD_setBlinking(MENU.col, MENU.row);
@@ -1033,8 +1033,8 @@ fxnOperation_Sample_Stream(const Uint16 input)
     displayFxn(ENTER_STREAM, REG_STREAM.calc_val, 0);
 
 	int val;
-	char a[MAX_LCD_WIDTH] = {0};
-	memcpy(a,lcdLine1,MAX_LCD_WIDTH);
+	char a[16] = {0};
+	memcpy(a,lcdLine1,16);
 	val = atoi(a);
 
     switch (input)  {
@@ -2442,7 +2442,7 @@ mnuConfig_Relay_Mode(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_RELAY_MODE;
 
-	memcpy(lcdLine1,relayMode[REG_RELAY_MODE],MAX_LCD_WIDTH);
+	memcpy(lcdLine1,relayMode[REG_RELAY_MODE],16);
 
     (isUpdateDisplay) ? updateDisplay(CFG_RELAY_MODE, lcdLine1) : displayLcd(lcdLine1, LCD1);
 	
@@ -2469,7 +2469,7 @@ fxnConfig_Relay_Mode(const Uint16 input)
 
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_RELAY_MODE, MNU_CFG_RELAY_MODE); }
 	static Uint8 index;
-	memcpy(lcdLine1,relayMode[index],MAX_LCD_WIDTH);
+	memcpy(lcdLine1,relayMode[index],16);
 	blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2493,7 +2493,7 @@ mnuConfig_Relay_ActWhile(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_RELAY_ACTWHILE;
 
-	memcpy(lcdLine1,phaseMode[COIL_ACT_RELAY_OIL.val],MAX_LCD_WIDTH);
+	memcpy(lcdLine1,phaseMode[COIL_ACT_RELAY_OIL.val],16);
 	(isUpdateDisplay) ? updateDisplay(CFG_RELAY_VAR,lcdLine1) : displayLcd(lcdLine1, LCD1);
 
 	switch (input)	
@@ -2516,7 +2516,7 @@ fxnConfig_Relay_ActWhile(const Uint16 input)
 
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_RELAY_ACTWHILE, MNU_CFG_RELAY_ACTWHILE); }
 
-	memcpy(lcdLine1,phaseMode[index],MAX_LCD_WIDTH);
+	memcpy(lcdLine1,phaseMode[index],16);
     blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2540,7 +2540,7 @@ mnuConfig_Relay_RelayStatus(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_RELAY_RELAYSTATUS;
 
-	memcpy(lcdLine1,statusMode[COIL_RELAY_MANUAL.val],MAX_LCD_WIDTH);
+	memcpy(lcdLine1,statusMode[COIL_RELAY_MANUAL.val],16);
 
 	(isUpdateDisplay) ? updateDisplay(CFG_RELAY_RELAYSTATUS,lcdLine1) : displayLcd(lcdLine1, LCD1);
 
@@ -2562,7 +2562,7 @@ fxnConfig_Relay_RelayStatus(const Uint16 input)
     if (isMessage) { return notifyMessageAndExit(FXN_CFG_RELAY_RELAYSTATUS, MNU_CFG_RELAY_RELAYSTATUS); }
 	const char * statusMode[2] = {RELAY_OFF, RELAY_ON}; 
     static Uint8 index;
-	memcpy(lcdLine1,statusMode[index],MAX_LCD_WIDTH);
+	memcpy(lcdLine1,statusMode[index],16);
     blinkLcdLine1(lcdLine1, BLANK);
 
     switch (input)  {
@@ -2626,7 +2626,7 @@ mnuConfig_DnsCorr(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR;
 
-	sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityMode[REG_OIL_DENS_CORR_MODE]);
+	sprintf(lcdLine1,"%*s",16,densityMode[REG_OIL_DENS_CORR_MODE]);
 
 	if (isUpdateDisplay)
     {
@@ -2654,15 +2654,16 @@ mnuConfig_DnsCorr_CorrEnable(const Uint16 input)
 {
 	if (I2C_TXBUF.n > 0) return MNU_CFG_DNSCORR_CORRENABLE;
 
-	sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityMode[REG_OIL_DENS_CORR_MODE]);
+	sprintf(lcdLine1,"%*s",16,densityMode[REG_OIL_DENS_CORR_MODE]);
 
 	if (isUpdateDisplay)
     {
         if (REG_OIL_DENS_CORR_MODE == 1) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_AI, CALC_UNIT);
         else if (REG_OIL_DENS_CORR_MODE == 2) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MODBUS, CALC_UNIT);
         else if (REG_OIL_DENS_CORR_MODE == 3) VAR_Update(&REG_OIL_DENSITY, REG_OIL_DENSITY_MANUAL, CALC_UNIT);
+		else DIAGNOSTICS &= ~(ERR_DNS_LO | ERR_DNS_HI);
 
-        updateDisplay(CFG_DNSCORR, lcdLine1);
+		updateDisplay(CFG_DNSCORR_CORRENABLE, lcdLine1);
     }
     else displayLcd(lcdLine1, LCD1);
 
@@ -2686,7 +2687,7 @@ fxnConfig_DnsCorr_CorrEnable(const Uint16 input)
 
 	static Uint8 index;
 
-	sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityMode[index]);
+	memcpy(lcdLine1,densityMode[index],MAX_LCD_WIDTH);
 
 	blinkLcdLine1(lcdLine1, BLANK);
 
@@ -2724,7 +2725,7 @@ mnuConfig_DnsCorr_DispUnit(const Uint16 input)
             if (REG_OIL_DENSITY.unit == densityUnit[index]) break;
         }
 
-		sprintf(lcdLine1,"%*s",MAX_LCD_WIDTH,densityIndex[index]);
+		sprintf(lcdLine1,"%*s",16,densityIndex[index]);
 	    updateDisplay(CFG_DNSCORR_DISPUNIT, lcdLine1);
     }
 
@@ -3398,10 +3399,10 @@ fxnSecurityInfo_TimeAndDate(const Uint16 input)
 			return FXN_SECURITYINFO_TIMEANDDATE;
         case BTN_STEP   :	
             /*MENU.col++;
-			if (MENU.col == MAX_LCD_WIDTH) MENU.col = 0;
+			if (MENU.col == 16) MENU.col = 0;
            	if ((MENU.col == 2) || (MENU.col == 5) || (MENU.col == 8) || (MENU.col == 11)) MENU.col++;
 			if ((MENU.col == 12) || (MENU.col == 13)) MENU.col = 14;
-			if (MENU.col >= MAX_LCD_WIDTH) MENU.col = 0;
+			if (MENU.col >= 16) MENU.col = 0;
             LCD_printch(lcdLine1[MENU.col], MENU.col, MENU.row);
             LCD_setBlinking(MENU.col, MENU.row);*/
 			Swi_post(Swi_changeTime);
@@ -3470,8 +3471,8 @@ fxnSecurityInfo_AccessTech(const Uint16 input)
 
     displayFxn(SECURITYINFO_ACCESSTECH, 0, 0);
 
-	char a[MAX_LCD_WIDTH] = {0};
-	memcpy(a,lcdLine1,MAX_LCD_WIDTH);
+	char a[16] = {0};
+	memcpy(a,lcdLine1,16);
 	int val = atoi(a);
 
 	switch (input)	{
@@ -3787,7 +3788,7 @@ fxnSecurityInfo_Profile(const Uint16 input)
 	{
         if (isCsvDownloadSuccess) 
         {
-			memcpy(lcdLine1,LOAD_SUCCESS,MAX_LCD_WIDTH);
+			memcpy(lcdLine1,LOAD_SUCCESS,16);
             return notifyMessageAndExit(FXN_SECURITYINFO_PROFILE,MNU_SECURITYINFO_PROFILE);
         }
 		else if (isDownloadCsv)
