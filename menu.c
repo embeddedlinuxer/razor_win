@@ -107,6 +107,17 @@ ISR_Process_Menu (void)
 }
 
 //////////////////////////////////////////////////////////////
+/// ISR_DataLogging()
+/// Clock Handle: logData_Clock
+//////////////////////////////////////////////////////////////
+
+void 
+ISR_logData(void)
+{
+	if (isLogData) Semaphore_post(logData_sem);
+}
+
+//////////////////////////////////////////////////////////////
 /// Process_Menu()
 /// Task Handle:		Menu_task 
 /// Semaphore Pend:	Menu_sem
@@ -325,9 +336,7 @@ int onMnuStepPressed(const int nextId, const int currentId, const char * label)
     isMessage = FALSE;
     counter = 0;
 
-    //
     // DO THIS MULTIPLE TIMES TO ENSURE DISPLAY GETS UPDATED CORRECTLY
-    // C6748 I2C IS **EXTREMLY** SLOW
     displayLcd(label, LCD0);
     displayLcd(label, LCD0);
     displayLcd(label, LCD0);
@@ -749,7 +758,8 @@ mnuHomescreenDiagnostics(const Uint16 input)
         {
             errorCount = 0; 
             sprintf(lcdLine0,"Diagnostics: %*d",3, errorCount);
-            updateDisplay(lcdLine0,BLANK);
+            memcpy(lcdLine1,BLANK,MAX_LCD_WIDTH);
+            updateDisplay(lcdLine0,lcdLine1);
         }
     }    
 
@@ -1671,14 +1681,9 @@ fxnConfig_DataLogger_EnableLogger(const Uint16 input)
             return FXN_CFG_DATALOGGER_ENABLELOGGER;
         case BTN_ENTER  : 
 			isLogData = isEnabled;
-			if (isLogData) 
-			{
-				Clock_start(logData_Clock);
-                usbStatus = 1;
-			}
+			if (isLogData) usbStatus = 1;
             else
             {
-				Clock_stop(logData_Clock);
 				resetUsbStaticVars();
                 usbStatus = 0;
             }

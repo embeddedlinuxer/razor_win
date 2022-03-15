@@ -361,8 +361,7 @@ void Init_LCD(void)
 	Clock_start(I2C_LCD_Clock);
 	Clock_start(I2C_Start_Pulse_MBVE_Clock);
 	Clock_start(Process_Menu_Clock);
-
-	Semaphore_post(Menu_sem);
+	Clock_start(logData_Clock);
 }
 
 void Init_MBVE(void)
@@ -886,9 +885,6 @@ void I2C_Pulse_MBVE(void)
 		}	
 	}
 	
-	/* call Process_Menu() */	
-	if (button_state_changed) Semaphore_post(Menu_sem);
-
 	/* start the "short" MBVE clock */
 	Clock_start(I2C_Pulse_MBVE_Clock); // pulse the next button in ~37.5ms 100 clock ticks
 
