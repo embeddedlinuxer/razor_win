@@ -297,9 +297,12 @@ void errorUsb(FRESULT fr)
     return;
 }
 
-
 void logData(void)
 {
+	static char entry[MAX_ENTRY_SIZE];
+	static int i = 0;
+	static double LOG_REGS[20];
+
 	while (1)
 	{
 		Semaphore_pend(logData_sem, BIOS_WAIT_FOREVER);
@@ -360,51 +363,52 @@ void logData(void)
 		   			}
 				}   
 
-    			char entry[MAX_ENTRY_SIZE];
-    			int index;
+    			/* get data */	
+    			LOG_REGS[0] = DIAGNOSTICS;
+        		LOG_REGS[1] = REG_STREAM.calc_val;
+        		LOG_REGS[2] = REG_WATERCUT.calc_val;
+        		LOG_REGS[3] = REG_WATERCUT_RAW;
+        		LOG_REGS[4] = REG_TEMP_USER.calc_val;
+        		LOG_REGS[5] = REG_TEMP_AVG.calc_val;
+        		LOG_REGS[6] = REG_TEMP_ADJUST.calc_val;
+        		LOG_REGS[7] = REG_FREQ.calc_val;
+        		LOG_REGS[8] = REG_OIL_INDEX.calc_val;
+        		LOG_REGS[9] = REG_OIL_RP;
+        		LOG_REGS[10] = REG_OIL_PT;
+        		LOG_REGS[11] = REG_OIL_P0.calc_val;
+        		LOG_REGS[12] = REG_OIL_P1.calc_val;
+        		LOG_REGS[13] = REG_OIL_DENSITY.calc_val;
+        		LOG_REGS[14] = REG_OIL_FREQ_LOW.calc_val;
+        		LOG_REGS[15] = REG_OIL_FREQ_HIGH.calc_val;
+        		LOG_REGS[16] = REG_AO_LRV.calc_val;
+        		LOG_REGS[17] = REG_AO_URV.calc_val;
+        		LOG_REGS[18] = REG_AO_MANUAL_VAL;
+        		LOG_REGS[19] = REG_RELAY_SETPOINT.calc_val;
 
-    			double LOG_REGS[] = {
-        		DIAGNOSTICS,
-        		REG_STREAM.calc_val,
-        		REG_WATERCUT.calc_val,
-        		REG_WATERCUT_RAW,
-        		REG_TEMP_USER.calc_val,
-        		REG_TEMP_AVG.calc_val,
-        		REG_TEMP_ADJUST.calc_val,
-        		REG_FREQ.calc_val,
-        		REG_OIL_INDEX.calc_val,
-        		REG_OIL_RP,
-        		REG_OIL_PT,
-        		REG_OIL_P0.calc_val,
-        		REG_OIL_P1.calc_val,
-        		REG_OIL_DENSITY.calc_val,
-        		REG_OIL_FREQ_LOW.calc_val,
-        		REG_OIL_FREQ_HIGH.calc_val,
-        		REG_AO_LRV.calc_val,
-        		REG_AO_URV.calc_val,
-        		REG_AO_MANUAL_VAL,
-        		REG_RELAY_SETPOINT.calc_val};
-
+    			/* get date */	
     			sprintf(TEMP_BUF,"%02d-%02d-20%02d,%02d:%02d:%02d,",USB_RTC_MON,USB_RTC_DAY,USB_RTC_YR,USB_RTC_HR,USB_RTC_MIN,USB_RTC_SEC);
 
-    			for (index=0;index<20;index++)
-    			{
-        			sprintf(entry,"%g,",LOG_REGS[index]);
-        			strcat(TEMP_BUF,entry);
-    			}
+    			/* get data */	
+				for (i=0;i<20;i++) 
+				{
+					sprintf(entry,"%g,",LOG_REGS[i]);
+					strcat(TEMP_BUF,entry);
+				}
 
-    			strcat(TEMP_BUF,"\n");
+				strcat(TEMP_BUF,"\n");
 				strcat(DATA_BUF,TEMP_BUF);
+
+				TimerWatchdogReactivate(CSL_TMR_1_REGS);
 
 				if (read_counter > 5)
 				{
+					strcat(DATA_BUF,"\0");
    					f_open(&logWriteObject, logFile, FA_WRITE | FA_OPEN_EXISTING);
   					f_lseek(&logWriteObject,f_size(&logWriteObject));
 					f_puts(DATA_BUF,&logWriteObject);
    					f_close(&logWriteObject);
 
     				DATA_BUF[0] = '\0';
-    				TEMP_BUF[0] = '\0';
 					read_counter = 0;
 					TimerWatchdogReactivate(CSL_TMR_1_REGS);
 				}
