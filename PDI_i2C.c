@@ -517,7 +517,6 @@ void LCD_setcursor(int curs_on, int curs_blink)
 	Uint8 lcd_data = 0x0C; // DB3 and DB2 must be set
 
 	key = Swi_disable();
-
 	if (curs_on)
 	{
 		MENU.curStat = LCD_CURS_ON;
@@ -536,7 +535,7 @@ void LCD_setcursor(int curs_on, int curs_blink)
 		MENU.curStat = LCD_CURS_OFF | LCD_CURS_NOBLINK;
 
 	Pulse_ePin(0,0,lcd_data);
-
+	Pulse_ePin(0,0,lcd_data);
 	Swi_restore(key);
 }
 
