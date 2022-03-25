@@ -10,6 +10,7 @@
 #define	REGPERM_READ_O	    2	// No write permission at all
 #define	REGPERM_WRITE_O	    3	// No Read permission at all
 #define	REGPERM_FCT	        4	// Locked to protect Factory Default Value
+#define	REGPERM_VOLATL	    5	// Volatile Modbus Register (REG_OIL_DENSITY_MODBUS) 
 
 #define REGTYPE_VAR		    5	// Address of a VAR-type variable
 #define REGTYPE_DBL		    6	// Address of a float-type variable
@@ -123,7 +124,7 @@ const Uint32 MB_TBL_FLOAT[][4] = {
 	151	, 	REGTYPE_VAR	,	REGPERM_PASSWD	,	(Uint32)&REG_RELAY_SETPOINT,	// Relay Setpoint
 	153	, 	REGTYPE_DBL	,	REGPERM_READ_O	,	(Uint32)&RESERVED_153,			// AO mode
 	155	, 	REGTYPE_VAR	,	REGPERM_READ_O	,	(Uint32)&REG_OIL_DENSITY,		// Oil Density main register
-	157	,   REGTYPE_DBL	,	REGPERM_PASSWD	,	(Uint32)&REG_OIL_DENSITY_MODBUS,// density value in modbus input - intermediate scalar value
+	157	,   REGTYPE_DBL	,	REGPERM_VOLATL	,	(Uint32)&REG_OIL_DENSITY_MODBUS,// density value in modbus input - intermediate scalar value
 	159	,   REGTYPE_DBL	,	REGPERM_PASSWD	,	(Uint32)&REG_OIL_DENSITY_AI,	// density value in Analog input - intermediate scalar value
 	161	,   REGTYPE_DBL	,	REGPERM_PASSWD	,	(Uint32)&REG_OIL_DENSITY_MANUAL,// density value in manual - intermediate scalar value
 	163	, 	REGTYPE_VAR	,	REGPERM_PASSWD	,	(Uint32)&REG_OIL_DENSITY_AI_LRV,// AI LRV
