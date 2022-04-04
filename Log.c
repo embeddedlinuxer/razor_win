@@ -299,9 +299,15 @@ void errorUsb(FRESULT fr)
 
 void logData(void)
 {
-	static char entry[MAX_ENTRY_SIZE];
 	static int i = 0;
+	static char entry[MAX_ENTRY_SIZE];
 	static double LOG_REGS[20];
+
+	entry[0] = '\0';
+	LOG_REGS[0] = '\0';
+	LOG_HEAD[0] = '\0';
+	DATA_BUF[0] = '\0';
+	read_counter = 0;
 
 	while (1)
 	{
@@ -316,8 +322,6 @@ void logData(void)
 			if (time_counter % REG_LOGGING_PERIOD == 0)
 			{
 				time_counter = 0;
-				read_counter = 0;
-				DATA_BUF[0] = '\0';
 
 				/* update temp time */
 				USB_RTC_SEC = REG_RTC_SEC;
