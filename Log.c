@@ -316,6 +316,8 @@ void logData(void)
 			if (time_counter % REG_LOGGING_PERIOD == 0)
 			{
 				time_counter = 0;
+				read_counter = 0;
+				DATA_BUF[0] = '\0';
 
 				/* update temp time */
 				USB_RTC_SEC = REG_RTC_SEC;
@@ -764,7 +766,7 @@ void enumerateUsb(void)
         	if(g_eState == STATE_DEVICE_ENUM)
         	{
 				snprintf(dummy,2,"%d",USB_RTC_SEC);
-            	if (USBHMSCDriveReady(g_ulMSCInstance) != 0) usb_osalDelayMs(300);
+            	if (USBHMSCDriveReady(g_ulMSCInstance) != 0) usb_osalDelayMs(500);
             	if (!g_fsHasOpened && (FATFS_open(0U, NULL, &fatfsHandle) == FR_OK)) g_fsHasOpened = 1;
 				isUsbMounted = TRUE;
 				break;
