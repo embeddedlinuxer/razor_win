@@ -20,11 +20,7 @@
 * It also has functions that calculate density at standard conditions 
 * given the conditions at process.
 * (This file was lifted wholesale from the EEA code.)
-*-------------------------------------------------------------------------
-* HISTORY:
-*       Jul-18-2018 : Daniel Koh : Migraged to linux platform
-*------------------------------------------------------------------------*/
-
+*-------------------------------------------------------------------------*/
 
 #define API_H
 #define API_fail		2
@@ -49,7 +45,7 @@
 /*              Volume Correction Factor -DHA                               */
 /****************************************************************************/
 
-void API_VCF(float* VCFw, float* VCFo)
+void API_VCF( float* VCFw, float* VCFo )
 {
 	float t;
 	float B;
@@ -221,7 +217,7 @@ void API_STATUS(const BOOL type)
 /*				calculating the final temperature.							*/
 /*                                                                          */
 /****************************************************************************/
-double API_60F_PT(const double r, int* k_set)
+double API_60F_PT( const double r, int* k_set )
 {/* convert from 60F to process Temperature */
  	double t;	/* temperature */
 
@@ -501,7 +497,7 @@ double API_60F_PT(const double r, int* k_set)
 /* Notes:       none.												        */
 /*                                                                          */
 /****************************************************************************/
-double API_15C_PT(const double r, int* k_set)
+double API_15C_PT( const double r, int* k_set )
 {/* convert from 15C to process Temperature */
 	double t;	/* temperature */
 
@@ -765,7 +761,7 @@ double API_15C_PT(const double r, int* k_set)
 /* Notes:                                                                   */
 /*                                                                          */
 /****************************************************************************/
-double API_PT_ST(const double r, const BOOL F60, const BOOL RET_VCF)
+double API_PT_ST( const double r, const BOOL F60, const BOOL RET_VCF )
 {/* convert from process temperature to standard temperature */
 	double pini;	/* initial data */
 	double pn;		/* calculated data */
@@ -966,7 +962,7 @@ double API_PT_ST(const double r, const BOOL F60, const BOOL RET_VCF)
 /* Notes:       return value: ((141.5 * 999.012) / r) - 135.5               */
 /*                                                                          */
 /****************************************************************************/
-double kgm3_to_API(const double r)
+double kgm3_to_API( const double r )
 {
 	if (r<=(double)0.0)
 		return (double)API_error_num;
