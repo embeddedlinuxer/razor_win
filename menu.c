@@ -336,13 +336,7 @@ int onMnuStepPressed(const int nextId, const int currentId, const char * label)
     isMessage = FALSE;
     counter = 0;
 
-    // DO THIS MULTIPLE TIMES TO ENSURE DISPLAY GETS UPDATED CORRECTLY
     displayLcd(label, LCD0);
-    displayLcd(label, LCD0);
-    displayLcd(label, LCD0);
-    displayLcd(label, LCD0);
-    displayLcd(BLANK, LCD1);
-    displayLcd(BLANK, LCD1);
     displayLcd(BLANK, LCD1);
 
     if (currentId != FALSE)
